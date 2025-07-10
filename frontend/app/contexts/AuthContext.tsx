@@ -1,57 +1,40 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserLocalPersistence } from 'firebase/auth';
-import { auth } from '@/lib/firebase/client';
+import { createContext, useContext, useState, ReactNode } from 'react';
 
 type AuthContextType = {
-    user: User | null;
-    loading: boolean;
-    signInWithGoogle: () => Promise<void>;
-    signOut: () => Promise<void>;
+    userId: number | null;
+    setUserId: (id: number | null) => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setUser(user);
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
-    }, []);
-
-    const signInWithGoogle = async () => {
-        const provider = new GoogleAuthProvider();
-        try {
-            await setPersistence(auth, browserLocalPersistence);
-            await signInWithPopup(auth, provider);
-        } catch (error) {
-            console.error("Error signing in with Google", error);
+    const [userId, setUserId] = useState<number | null>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('user-id');
+            return saved ? parseInt(saved, 10) : null;
         }
-    };
+        return null;
+    });
 
-    const handleSignOut = async () => {
-        try {
-            await signOut(auth);
-        } catch (error) {
-            console.error("Error signing out", error);
+    const handleSetUserId = (id: number | null) => {
+        setUserId(id);
+        if (typeof window !== 'undefined') {
+            if (id !== null) {
+                localStorage.setItem('user-id', id.toString());
+            } else {
+                localStorage.removeItem('user-id');
+            }
         }
     };
 
     const value = {
-        user,
-        loading,
-        signInWithGoogle,
-        signOut: handleSignOut,
+        userId,
+        setUserId: handleSetUserId,
     };
 
-    return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
