@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, FC, useCallback, useMemo } from 'react';
 import { FaMicrophone, FaStop, FaShareAlt, FaCog, FaTimes, FaUser, FaTrash } from 'react-icons/fa';
 import { format as formatDate } from 'date-fns';
 import { useAuth } from './contexts/AuthContext';
+import { product1 } from '../lib/products';
 
 interface Note {
     id: string;
@@ -607,8 +608,9 @@ function MemosPage() {
                     {notes.length === 0 && (
                         <div className="empty-state">
                             <img src="/images/ferret.jpeg" alt="フェレット" className="empty-state-image" />
-                            <p>まだメモがありません。</p>
-                            <p>下のマイクボタンを押して、最初のメモを録音しましょう。</p>
+                            <div className="product-description">
+                                <p className="product-text">{product1.text}</p>
+                            </div>
                             {isHydrated && !userId && <p style={{ marginTop: '1rem', fontSize: '0.9rem', opacity: 0.8 }}>ユーザーIDを設定すると、データを識別できます。</p>}
                         </div>
                     )}
