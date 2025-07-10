@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, FC, useCallback, useMemo } from 'react';
-import { FaMicrophone, FaStop, FaShareAlt, FaCog, FaTimes, FaUser } from 'react-icons/fa';
+import { FaMicrophone, FaStop, FaShareAlt, FaCog, FaTimes, FaUser, FaTrash } from 'react-icons/fa';
 import { format as formatDate } from 'date-fns';
 import { useAuth } from './contexts/AuthContext';
 
@@ -157,7 +157,7 @@ const SettingsModal: FC<{
 
 // =========== MemosPage Component ===========
 function MemosPage() {
-    const { userId } = useAuth();
+    const { userId, isHydrated } = useAuth();
     const [notes, setNotes] = useState<Note[]>([]);
     const [newNoteContent, setNewNoteContent] = useState('');
     const [isRecording, setIsRecording] = useState(false);
@@ -577,7 +577,7 @@ function MemosPage() {
         <div className="memos-container">
             <header className="main-header">
                 <div className="header-content">
-                    <h1>{userId ? `ユーザー${userId}のメモ` : 'My Whisper'}</h1>
+                    <h1>{!isHydrated ? 'My Whisper' : (userId ? `ユーザー${userId}` : '未ログイン')}</h1>
                     <button className="settings-button" onClick={() => setIsSettingsOpen(true)}>
                         <FaCog />
                     </button>
@@ -609,7 +609,7 @@ function MemosPage() {
                             <img src="/images/ferret.jpeg" alt="フェレット" className="empty-state-image" />
                             <p>まだメモがありません。</p>
                             <p>下のマイクボタンを押して、最初のメモを録音しましょう。</p>
-                            {!userId && <p style={{ marginTop: '1rem', fontSize: '0.9rem', opacity: 0.8 }}>ユーザーIDを設定すると、データを識別できます。</p>}
+                            {isHydrated && !userId && <p style={{ marginTop: '1rem', fontSize: '0.9rem', opacity: 0.8 }}>ユーザーIDを設定すると、データを識別できます。</p>}
                         </div>
                     )}
                 </div>
