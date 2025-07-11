@@ -10,7 +10,678 @@ body {
     overflow: hidden;
 }
 
+/* ホームページ用のスタイル */
+.home-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    height: 100%;
+    justify-content: center;
+}
+
+.menu-card {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #333;
+}
+
+.menu-section {
+    margin-bottom: 24px;
+}
+
+.menu-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #888;
+    margin-bottom: 16px;
+}
+
+.menu-button {
+    width: 100%;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    background-color: #333;
+    color: #e0e0e0;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.menu-button:last-child {
+    margin-bottom: 0;
+}
+
+.menu-button:hover {
+    background-color: #404040;
+    transform: translateY(-1px);
+}
+
+.menu-button.practice {
+    background-color: #ff6b35;
+    color: white;
+}
+
+.menu-button.practice:hover {
+    background-color: #e55a2e;
+}
+
+.menu-divider {
+    height: 1px;
+    background-color: #333;
+    margin: 20px 0;
+}
+
+.login-hint {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #888;
+    text-align: center;
+    max-width: 400px;
+}
+
+/* Think-Aloud page styles */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    color: #e0e0e0;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.back-button:hover {
+    background-color: #333;
+}
+
+.user-id {
+    font-size: 16px;
+    font-weight: normal;
+    opacity: 0.8;
+}
+
+/* Upload phase styles */
+.upload-phase {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 20px;
+}
+
+.upload-card {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 32px;
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid #333;
+    text-align: center;
+}
+
+.upload-card h2 {
+    margin-bottom: 24px;
+    color: #e0e0e0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.upload-area {
+    width: 100%;
+    height: 300px;
+    border: 2px dashed #555;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+
+.upload-placeholder {
+    text-align: center;
+    color: #888;
+}
+
+.upload-placeholder svg {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.upload-placeholder p {
+    font-size: 16px;
+    margin: 0;
+}
+
+.preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.upload-buttons {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.camera-button-main {
+    padding: 18px 40px;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background-color: #007bff;
+    color: white;
+    min-width: 200px;
+}
+
+.camera-button-main:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* Developer controls */
+.dev-controls {
+    margin-top: 20px;
+    text-align: center;
+    border-top: 1px solid #333;
+    padding-top: 16px;
+}
+
+.dev-default-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.7;
+}
+
+.dev-default-button:hover {
+    background-color: #545b62;
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+.generate-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 100%;
+}
+
+.generate-button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.generate-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.generated-content {
+    margin-top: 24px;
+}
+
+.generated-content h3 {
+    margin: 0 0 16px 0;
+    color: #e0e0e0;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.generated-text {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    color: #e0e0e0;
+    font-size: 16px;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.start-edit-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 100%;
+}
+
+.start-edit-button:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+}
+
+/* Edit phase styles */
+.edit-phase {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px;
+    gap: 20px;
+}
+
+.image-section {
+    flex-shrink: 0;
+}
+
+.product-image {
+    width: 100%;
+    max-width: 300px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #333;
+}
+
+.text-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.text-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.text-header h3 {
+    margin: 0;
+    color: #e0e0e0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.recording-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.recording-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ff4444;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.wave-animation {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.wave-bar {
+    width: 3px;
+    height: 12px;
+    background-color: #ff4444;
+    border-radius: 2px;
+    animation: wave 1.2s ease-in-out infinite;
+}
+
+.wave-bar:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.wave-bar:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+@keyframes wave {
+    0%, 40%, 100% {
+        transform: scaleY(0.4);
+    }
+    20% {
+        transform: scaleY(1);
+    }
+}
+
+.connecting-text {
+    color: #888;
+    font-size: 14px;
+}
+
+.text-editor {
+    width: 100%;
+    min-height: 300px;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 16px;
+    line-height: 1.5;
+    resize: vertical;
+    transition: border-color 0.2s ease;
+}
+
+.text-editor:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.text-editor.recording {
+    border-color: #ff4444;
+    box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
+}
+
+.controls {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.record-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #333;
+    color: #e0e0e0;
+    border: none;
+    border-radius: 8px;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    justify-content: center;
+}
+
+.record-button:hover:not(:disabled) {
+    background-color: #404040;
+}
+
+.record-button.recording {
+    background-color: #ff4444;
+    color: white;
+}
+
+.record-button.recording:hover {
+    background-color: #e03d3d;
+}
+
+.record-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.complete-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    flex: 1;
+}
+
+.complete-button:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+.complete-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.complete-button-full {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 100%;
+}
+
+.complete-button-full:hover {
+    background-color: #218838;
+}
+
+/* Auto recording info styles */
+.auto-recording-info {
+    flex: 2;
+    text-align: center;
+    padding: 16px;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    border: 1px solid #444;
+}
+
+.recording-active {
+    color: #ff4444;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.connecting-info {
+    color: #888;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.recording-ready {
+    color: #28a745;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+/* Manual Edit page specific styles */
+.edit-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.unsaved-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #ff6b35;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.text-editor.edited {
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+}
+
+.reset-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    flex: 1;
+}
+
+.reset-button:hover:not(:disabled) {
+    background-color: #545b62;
+}
+
+.reset-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.save-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    justify-content: center;
+}
+
+.save-button.has-changes {
+    background-color: #ff6b35;
+}
+
+.save-button.has-changes:hover {
+    background-color: #e55a2e;
+}
+
+.save-button:hover:not(:disabled):not(.has-changes) {
+    background-color: #545b62;
+}
+
+.save-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.error-message {
+    color: #ff6b35;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 16px;
+    padding: 12px;
+    background-color: rgba(255, 107, 53, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 107, 53, 0.3);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .edit-phase {
+        padding: 16px;
+        gap: 16px;
+    }
+    
+    .upload-card {
+        padding: 24px;
+    }
+    
+    .upload-area {
+        height: 250px;
+    }
+    
+    .camera-button-main {
+        padding: 16px 32px;
+        font-size: 16px;
+        min-width: 180px;
+    }
+    
+    .dev-default-button {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+    
+    .text-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .controls {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .auto-recording-info {
+        padding: 14px;
+    }
+    
+    .recording-active,
+    .connecting-info,
+    .recording-ready {
+        font-size: 14px;
+    }
+    
+    .header-left h1 {
+        font-size: 18px;
+    }
+    
+    .user-id {
+        font-size: 14px;
+    }
+}
+
 .memos-container {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+.app-container {
     height: 100dvh;
     display: flex;
     flex-direction: column;
