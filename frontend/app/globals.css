@@ -498,32 +498,66 @@ body {
     background-color: #218838;
 }
 
-/* Auto recording info styles */
-.auto-recording-info {
-    flex: 2;
-    text-align: center;
-    padding: 16px;
+/* Transcription display styles */
+.transcription-display {
     background-color: #2a2a2a;
     border-radius: 8px;
     border: 1px solid #444;
+    margin-bottom: 16px;
+    overflow: hidden;
 }
 
-.recording-active {
-    color: #ff4444;
+.transcription-header {
+    padding: 10px 16px;
+    background-color: #333;
+    border-bottom: 1px solid #444;
+    text-align: center;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 14px;
+    color: #e0e0e0;
 }
 
-.connecting-info {
+.transcript-items {
+    padding: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 40px;
+    align-items: center;
+}
+
+.transcript-bubble {
+    background-color: #1e1e1e;
+    border: 1px solid #444;
+    border-radius: 12px;
+    padding: 6px 12px;
+    color: #e0e0e0;
+    font-size: 13px;
+    word-wrap: break-word;
+    animation: bubbleIn 0.3s ease-in;
+    white-space: nowrap;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.no-transcript {
     color: #888;
-    font-weight: 500;
-    font-size: 16px;
+    font-style: italic;
+    font-size: 13px;
+    text-align: center;
+    width: 100%;
 }
 
-.recording-ready {
-    color: #28a745;
-    font-weight: 500;
-    font-size: 16px;
+@keyframes bubbleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 /* Manual Edit page specific styles */
@@ -651,14 +685,25 @@ body {
         gap: 12px;
     }
     
-    .auto-recording-info {
-        padding: 14px;
+    .transcription-header {
+        padding: 8px 12px;
+        font-size: 13px;
     }
     
-    .recording-active,
-    .connecting-info,
-    .recording-ready {
-        font-size: 14px;
+    .transcript-items {
+        padding: 10px;
+        min-height: 35px;
+        gap: 6px;
+    }
+    
+    .transcript-bubble {
+        font-size: 12px;
+        padding: 5px 10px;
+        max-width: 150px;
+    }
+    
+    .no-transcript {
+        font-size: 12px;
     }
     
     .header-left h1 {

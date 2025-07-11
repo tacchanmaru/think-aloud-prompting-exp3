@@ -25,6 +25,7 @@ function ThinkAloudPage() {
     const [isRecording, setIsRecording] = useState(false);
     const [isTranscribing, setIsTranscribing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [transcriptItems, setTranscriptItems] = useState<{id: number, text: string}[]>([]);
     
     const websocketRef = useRef<WebSocket | null>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
@@ -202,8 +203,20 @@ function ThinkAloudPage() {
                     case 'conversation.item.input_audio_transcription.completed':
                         if (isConnectedRef.current && isRecordingStateRef.current) {
                             if (message.transcript) {
-                                // TODO: Send transcript to text modification API
                                 console.log('Transcript received:', message.transcript);
+                                // Add new transcript item
+                                const newItem = {
+                                    id: Date.now(),
+                                    text: message.transcript
+                                };
+                                setTranscriptItems(prev => [...prev, newItem]);
+                                
+                                // Remove this item after 3 seconds
+                                setTimeout(() => {
+                                    setTranscriptItems(prev => prev.filter(item => item.id !== newItem.id));
+                                }, 3000);
+                                
+                                // TODO: Send transcript to text modification API
                             }
                         }
                         break;
@@ -299,21 +312,6 @@ function ThinkAloudPage() {
                         <div className="text-section">
                             <div className="text-header">
                                 <h3>商品説明</h3>
-                                <div className="recording-status">
-                                    {isRecording && (
-                                        <div className="recording-indicator">
-                                            <div className="wave-animation">
-                                                <span className="wave-bar"></span>
-                                                <span className="wave-bar"></span>
-                                                <span className="wave-bar"></span>
-                                            </div>
-                                            <span className="recording-text">音声認識中</span>
-                                        </div>
-                                    )}
-                                    {isTranscribing && !isRecording && (
-                                        <span className="connecting-text">接続中...</span>
-                                    )}
-                                </div>
                             </div>
                             <textarea
                                 className={`text-editor ${isRecording ? 'recording' : ''}`}
@@ -323,17 +321,25 @@ function ThinkAloudPage() {
                                 rows={10}
                             />
                             <div className="controls">
-                                <div className="auto-recording-info">
-                                    {isRecording ? (
-                                        <span className="recording-active">🎙️ 音声入力中（自動開始）</span>
-                                    ) : isTranscribing ? (
-                                        <span className="connecting-info">接続中...</span>
-                                    ) : (
-                                        <span className="recording-ready">音声入力待機中</span>
-                                    )}
+                                <div className="transcription-display">
+                                    <div className="transcription-header">
+                                        {isRecording ? '🎙️ 音声認識中' : isTranscribing ? '接続中...' : '音声入力待機中'}
+                                    </div>
+                                    <div className="transcript-items">
+                                        {transcriptItems.map((item) => (
+                                            <span key={item.id} className="transcript-bubble">
+                                                {item.text}
+                                            </span>
+                                        ))}
+                                        {transcriptItems.length === 0 && (
+                                            <span className="no-transcript">
+                                                まだ音声が認識されていません
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 <button
-                                    className="complete-button"
+                                    className="complete-button-full"
                                     onClick={handleComplete}
                                     disabled={isRecording}
                                 >
