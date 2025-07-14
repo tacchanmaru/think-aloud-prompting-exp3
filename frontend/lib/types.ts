@@ -1,6 +1,6 @@
 // 基本的な実験データの型
 export interface BaseExperimentData {
-    userId: string;
+    userId: number;        // 1-100の範囲のユーザーID
     experimentType: 'manual' | 'think-aloud';
     productId: string;
     originalText: string;

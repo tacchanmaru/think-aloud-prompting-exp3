@@ -6,7 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import ProductImageUploadPhase from '../components/ProductImageUploadPhase';
 import Timer from '../components/Timer';
 import { useTimer } from '../contexts/TimerContext';
-import { saveExperimentData, generateUserId } from '../../lib/experimentService';
+import { useAuth } from '../contexts/AuthContext';
+import { saveExperimentData } from '../../lib/experimentService';
 import { ThinkAloudExperimentResult, IntermediateStep } from '../../lib/types';
 
 
@@ -16,9 +17,9 @@ function ThinkAloudPage() {
     const searchParams = useSearchParams();
     const isPractice = searchParams.get('practice') === 'true';
     const { stopTimer, getStartTimeISO, getEndTimeISO, getDurationSeconds } = useTimer();
+    const { userId } = useAuth();
     
     const [mode, setMode] = useState<'upload' | 'edit'>('upload');
-    const [userId] = useState<string>(() => generateUserId());
     
     // Application state
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -435,7 +436,7 @@ function ThinkAloudPage() {
             
             // 実験データを準備
             const experimentData: ThinkAloudExperimentResult = {
-                userId,
+                userId: userId || 0, // 1-100の範囲のuserId
                 experimentType: 'think-aloud',
                 productId: 'product1', // 現在はproduct1固定
                 originalText,
@@ -518,7 +519,7 @@ function ThinkAloudPage() {
                                 <button
                                     className="complete-button-full"
                                     onClick={handleComplete}
-                                    disabled={isProcessing}
+                                    disabled={isProcessing || modificationHistory.length === 0}
                                 >
                                     完了
                                 </button>

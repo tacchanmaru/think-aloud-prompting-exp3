@@ -36,12 +36,6 @@ export async function saveExperimentData(data: ExperimentResult): Promise<boolea
     }
 }
 
-// ユーザーIDを生成する関数（archiveと同様の方式）
-export function generateUserId(): string {
-    const timestamp = Date.now().toString();
-    const random = Math.random().toString(36).substr(2, 5);
-    return `user_${timestamp}_${random}`;
-}
 
 // 商品IDを決定する関数（archiveと同様の方式）
 export function getProductIdForUser(userId: string, experimentType: 'manual' | 'think-aloud'): string {

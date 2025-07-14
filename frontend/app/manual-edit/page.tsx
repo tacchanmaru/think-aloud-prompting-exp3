@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import ProductImageUploadPhase from '../components/ProductImageUploadPhase';
 import Timer from '../components/Timer';
 import { useTimer } from '../contexts/TimerContext';
-import { saveExperimentData, generateUserId } from '../../lib/experimentService';
+import { useAuth } from '../contexts/AuthContext';
+import { saveExperimentData } from '../../lib/experimentService';
 import { ManualExperimentResult } from '../../lib/types';
 
 
@@ -15,9 +16,9 @@ function ManualEditPage() {
     const searchParams = useSearchParams();
     const isPractice = searchParams.get('practice') === 'true';
     const { stopTimer, getStartTimeISO, getEndTimeISO, getDurationSeconds } = useTimer();
+    const { userId } = useAuth();
     
     const [mode, setMode] = useState<'upload' | 'edit'>('upload');
-    const [userId] = useState<string>(() => generateUserId());
     
     // Application state
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -25,6 +26,7 @@ function ManualEditPage() {
     // Text editing state
     const [textContent, setTextContent] = useState('');
     const [originalText, setOriginalText] = useState('');
+    const [hasEdited, setHasEdited] = useState(false);
 
 
     const handleUploadComplete = (imageFile: File, imagePreview: string, generatedText: string) => {
@@ -35,7 +37,13 @@ function ManualEditPage() {
     };
 
     const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setTextContent(event.target.value);
+        const newValue = event.target.value;
+        setTextContent(newValue);
+        
+        // Check if text has been edited
+        if (newValue !== originalText && !hasEdited) {
+            setHasEdited(true);
+        }
     };
 
     const handleComplete = async () => {
@@ -45,7 +53,7 @@ function ManualEditPage() {
             
             // 実験データを準備
             const experimentData: ManualExperimentResult = {
-                userId,
+                userId: userId || 0, // 1-100の範囲のuserId
                 experimentType: 'manual',
                 productId: 'product1', // 現在はproduct1固定
                 originalText,
@@ -100,6 +108,7 @@ function ManualEditPage() {
                                 <button
                                     className="complete-button-full"
                                     onClick={handleComplete}
+                                    disabled={!hasEdited}
                                 >
                                     完了
                                 </button>

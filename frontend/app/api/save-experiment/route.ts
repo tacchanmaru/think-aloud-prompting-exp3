@@ -30,16 +30,6 @@ if (!getApps().length) {
 
 export async function POST(request: NextRequest) {
     try {
-        // 環境変数のデバッグ情報
-        console.log('Environment variables check:', {
-            hasProjectId: !!process.env.FIREBASE_PROJECT_ID,
-            hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
-            hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKeyStart: process.env.FIREBASE_PRIVATE_KEY?.substring(0, 30) + '...'
-        });
-
         const experimentData: ExperimentResult = await request.json();
         
         // 必須フィールドのバリデーション
@@ -52,9 +42,11 @@ export async function POST(request: NextRequest) {
 
         const db = getFirestore();
         
-        // コレクションパスの決定
+        // コレクションパスの決定（新構造）
         const collectionPath = experimentData.isPracticeMode ? 'practice' : 'task';
-        const docRef = db.doc(`experiments/exp-1/${collectionPath}/${experimentData.userId}`);
+        const timestamp = Date.now().toString();
+        const experimentType = experimentData.experimentType === 'manual' ? 'manual_edit' : 'think_aloud';
+        const docRef = db.doc(`${collectionPath}/${timestamp}_${experimentType}`);
         
         // 実験タイプに応じたフィールド名の決定
         const fieldName = experimentData.experimentType === 'manual' 

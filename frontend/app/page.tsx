@@ -221,12 +221,6 @@ function HomePage() {
                             </button>
                         </div>
                     </div>
-                    
-                    {isHydrated && !userId && (
-                        <p className="login-hint">
-                            ユーザーIDを設定すると、データを識別できます。
-                        </p>
-                    )}
                 </div>
             </div>
 

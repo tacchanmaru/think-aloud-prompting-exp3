@@ -571,8 +571,14 @@ body {
     width: 100%;
 }
 
-.complete-button-full:hover {
+.complete-button-full:hover:not(:disabled) {
     background-color: #218838;
+}
+
+.complete-button-full:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 /* Transcription display styles */
