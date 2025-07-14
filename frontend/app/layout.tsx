@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "./contexts/AuthContext";
+import { TimerProvider } from "./contexts/TimerContext";
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -41,7 +42,9 @@ export default function RootLayout({
             </head>
             <body className={inter.className}>
                 <AuthProvider>
-                    <main>{children}</main>
+                    <TimerProvider>
+                        <main>{children}</main>
+                    </TimerProvider>
                 </AuthProvider>
             </body>
         </html>

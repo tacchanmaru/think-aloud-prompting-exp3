@@ -3,6 +3,10 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductImageUploadPhase from '../components/ProductImageUploadPhase';
+import Timer from '../components/Timer';
+import { useTimer } from '../contexts/TimerContext';
+import { saveExperimentData, generateUserId } from '../../lib/experimentService';
+import { ManualExperimentResult } from '../../lib/types';
 
 
 // =========== ManualEditPage Component ===========
@@ -10,19 +14,23 @@ function ManualEditPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const isPractice = searchParams.get('practice') === 'true';
+    const { stopTimer, getStartTimeISO, getEndTimeISO, getDurationSeconds } = useTimer();
     
     const [mode, setMode] = useState<'upload' | 'edit'>('upload');
+    const [userId] = useState<string>(() => generateUserId());
     
     // Application state
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     
     // Text editing state
     const [textContent, setTextContent] = useState('');
+    const [originalText, setOriginalText] = useState('');
 
 
     const handleUploadComplete = (imageFile: File, imagePreview: string, generatedText: string) => {
         setImagePreview(imagePreview);
         setTextContent(generatedText);
+        setOriginalText(generatedText); // 元のテキストとして保存
         setMode('edit');
     };
 
@@ -30,27 +38,57 @@ function ManualEditPage() {
         setTextContent(event.target.value);
     };
 
-    const handleComplete = () => {
-        alert('実験が完了しました。ありがとうございました。');
-        router.push('/');
+    const handleComplete = async () => {
+        try {
+            // タイマーを停止
+            stopTimer();
+            
+            // 実験データを準備
+            const experimentData: ManualExperimentResult = {
+                userId,
+                experimentType: 'manual',
+                productId: 'product1', // 現在はproduct1固定
+                originalText,
+                finalText: textContent,
+                startTime: getStartTimeISO() || new Date().toISOString(),
+                endTime: getEndTimeISO(),
+                durationSeconds: getDurationSeconds(),
+                isPracticeMode: isPractice,
+            };
+
+            // 保存を試行
+            const saveSuccess = await saveExperimentData(experimentData);
+            
+            if (saveSuccess) {
+                alert('実験が完了し、データが正常に保存されました。ありがとうございました。');
+            } else {
+                alert('実験は完了しましたが、データの保存に失敗しました。管理者にお知らせください。');
+            }
+            
+        } catch (error) {
+            console.error('Complete error:', error);
+            alert('実験は完了しましたが、データの保存中にエラーが発生しました。管理者にお知らせください。');
+        } finally {
+            router.push('/');
+        }
     };
 
     return (
         <div className="app-container">
-            <div className="content-area">
-                {mode === 'upload' ? (
-                    <ProductImageUploadPhase onComplete={handleUploadComplete} />
-                ) : (
-                    <div className="edit-phase">
-                        <div className="image-section">
-                            {imagePreview && (
-                                <img src={imagePreview} alt="商品画像" className="product-image" />
-                            )}
+            <Timer />
+            {mode === 'upload' ? (
+                <ProductImageUploadPhase onComplete={handleUploadComplete} />
+            ) : (
+                <div className="product-layout">
+                    <div className="product-image-container">
+                        {imagePreview && (
+                            <img src={imagePreview} alt="商品画像" className="product-image" />
+                        )}
+                    </div>
+                    <div className="product-description-container">
+                        <div className="text-header">
+                            <h3>商品説明</h3>
                         </div>
-                        <div className="text-section">
-                            <div className="text-header">
-                                <h3>商品説明</h3>
-                            </div>
                             <textarea
                                 className="text-editor"
                                 value={textContent}
@@ -69,7 +107,6 @@ function ManualEditPage() {
                         </div>
                     </div>
                 )}
-            </div>
         </div>
     );
 }

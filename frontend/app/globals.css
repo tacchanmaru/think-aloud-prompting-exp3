@@ -10,6 +10,80 @@ body {
     overflow: hidden;
 }
 
+/* 共通の商品表示レイアウト */
+.product-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 32px;
+    min-height: 100vh;
+    justify-content: flex-start;
+    box-sizing: border-box;
+}
+
+.product-image-container {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 24px;
+}
+
+.product-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid #444;
+}
+
+.product-description-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+    .product-layout {
+        padding: 20px;
+        max-width: 100%;
+    }
+    
+    .product-image-container {
+        max-width: 350px;
+    }
+}
+
+/* タイマー表示 */
+.timer-display {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.timer-label {
+    color: #888;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.timer-time {
+    color: #e0e0e0;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+}
+
 /* ホームページ用のスタイル */
 .home-menu {
     display: flex;
@@ -281,6 +355,8 @@ body {
     font-size: 16px;
     line-height: 1.6;
     text-align: left;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 .start-edit-button {
@@ -396,16 +472,17 @@ body {
 
 .text-editor {
     width: 100%;
-    min-height: 300px;
+    min-height: 400px;
     background-color: #1e1e1e;
     color: #e0e0e0;
     border: 1px solid #333;
     border-radius: 8px;
     padding: 16px;
     font-size: 16px;
-    line-height: 1.5;
+    line-height: 1.6;
     resize: vertical;
     transition: border-color 0.2s ease;
+    white-space: pre-wrap;
 }
 
 .text-editor:focus {
@@ -515,6 +592,16 @@ body {
     font-weight: 600;
     font-size: 14px;
     color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.buffer-status {
+    color: #ffa500;
+    font-size: 12px;
+    font-weight: 400;
 }
 
 .transcript-items {
@@ -711,6 +798,20 @@ body {
     }
     
     .user-id {
+        font-size: 14px;
+    }
+    
+    .timer-display {
+        top: 10px;
+        right: 10px;
+        padding: 8px 12px;
+    }
+    
+    .timer-label {
+        font-size: 12px;
+    }
+    
+    .timer-time {
         font-size: 14px;
     }
 }

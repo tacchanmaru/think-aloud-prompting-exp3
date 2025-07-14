@@ -2,6 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { FaImage } from 'react-icons/fa';
+import { product1 } from '../../lib/products';
+import { useTimer } from '../contexts/TimerContext';
 
 interface ProductImageUploadPhaseProps {
     onComplete: (imageFile: File, imagePreview: string, generatedText: string) => void;
@@ -14,6 +16,8 @@ const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onCom
     const [error, setError] = useState<string | null>(null);
     const [generatedText, setGeneratedText] = useState<string | null>(null);
     const [showStartButton, setShowStartButton] = useState(false);
+    
+    const { startTimer } = useTimer();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -69,15 +73,8 @@ const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onCom
             // For now, simulate with a delay and generate sample text based on image
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            const sampleTexts = [
-                `ふわふわで可愛いフェレットのぬいぐるみです。手触りがとても良く、お子様への贈り物にも最適です。リビングや寝室のインテリアとしても素敵です。サイズは約20cmで、持ち運びにも便利です。`,
-                `高品質な素材を使用したペンです。滑らかな書き心地で、ビジネスシーンでも使いやすいデザインです。重量バランスが良く、長時間の使用でも疲れにくい仕様になっています。`,
-                `シンプルで実用的なバッグです。軽量でありながら耐久性に優れ、日常使いに最適です。内側にはポケットが複数あり、小物の整理もしやすくなっています。`,
-                `可愛らしいデザインのペンギンのぬいぐるみです。ふわふわの毛質で、触り心地抜群です。お部屋のインテリアや癒しのアイテムとしてもおすすめです。`,
-                `上質な素材で作られたバッグです。シンプルなデザインで様々なシーンに合わせやすく、収納力も十分です。丈夫な作りで長くお使いいただけます。`
-            ];
-            
-            const randomText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+            // Use ferret product text from products.ts
+            const randomText = product1.text;
             
             // Store the generated text and show the start button
             setGeneratedText(randomText);
@@ -91,17 +88,18 @@ const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onCom
 
     const handleStartEditing = () => {
         if (imageFile && imagePreview && generatedText) {
+            startTimer(); // タイマーを開始
             onComplete(imageFile, imagePreview, generatedText);
         }
     };
 
     return (
         <div className="upload-phase">
-            <div className="upload-card">
+            <div className="product-layout">
                 <h2>商品画像を選択</h2>
-                <div className="upload-area">
+                <div className="product-image-container">
                     {imagePreview ? (
-                        <img src={imagePreview} alt="選択された画像" className="preview-image" />
+                        <img src={imagePreview} alt="選択された画像" className="product-image" />
                     ) : (
                         <div className="upload-placeholder">
                             <FaImage />
@@ -161,7 +159,7 @@ const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onCom
                 )}
                 
                 {generatedText && (
-                    <div className="generated-content">
+                    <div className="product-description-container">
                         <h3>生成された商品説明</h3>
                         <div className="generated-text">
                             {generatedText}
@@ -171,7 +169,7 @@ const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onCom
                                 className="start-edit-button"
                                 onClick={handleStartEditing}
                             >
-                                編集を開始する
+                                編集開始
                             </button>
                         )}
                     </div>

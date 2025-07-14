@@ -1,9 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { FaMicrophone, FaStop } from 'react-icons/fa';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductImageUploadPhase from '../components/ProductImageUploadPhase';
+import Timer from '../components/Timer';
+import { useTimer } from '../contexts/TimerContext';
+import { saveExperimentData, generateUserId } from '../../lib/experimentService';
+import { ThinkAloudExperimentResult, IntermediateStep } from '../../lib/types';
 
 
 // =========== ThinkAloudPage Component ===========
@@ -11,21 +15,35 @@ function ThinkAloudPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const isPractice = searchParams.get('practice') === 'true';
+    const { stopTimer, getStartTimeISO, getEndTimeISO, getDurationSeconds } = useTimer();
     
     const [mode, setMode] = useState<'upload' | 'edit'>('upload');
+    const [userId] = useState<string>(() => generateUserId());
     
     // Application state
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     
     // Text editing state
     const [textContent, setTextContent] = useState('');
+    const [modificationHistory, setModificationHistory] = useState<{
+        utterance: string;
+        editPlan: string;
+        originalText: string;
+        modifiedText: string;
+    }[]>([]);
+    const [historySummary, setHistorySummary] = useState('');
     const [originalText, setOriginalText] = useState('');
     
     // Audio recording state
     const [isRecording, setIsRecording] = useState(false);
     const [isTranscribing, setIsTranscribing] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [transcriptItems, setTranscriptItems] = useState<{id: number, text: string}[]>([]);
+    const [transcriptItems, setTranscriptItems] = useState<{id: number, text: string, utteranceText: string, isProcessed: boolean}[]>([]);
+    
+    // Utterance buffering state (matching archive backend logic)
+    const [utteranceBuffer, setUtteranceBuffer] = useState<string[]>([]);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const lastCompleteTimeRef = useRef<number>(Date.now());
     
     const websocketRef = useRef<WebSocket | null>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
@@ -34,6 +52,121 @@ function ThinkAloudPage() {
     const isRecordingStateRef = useRef<boolean>(false);
     const streamRef = useRef<MediaStream | null>(null);
 
+    // Buffer processing logic (matching archive backend) - moved inline to processBufferedUtterances
+
+    const processTextModification = useCallback(async (utterance: string) => {
+        try {
+            console.log('Processing text modification for utterance:', utterance);
+            console.log('Current text:', textContent);
+            
+            const response = await fetch('/api/text-modification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: textContent,
+                    utterance: utterance,
+                    imageBase64: imagePreview ? imagePreview.split(',')[1] : undefined,
+                    history: modificationHistory,
+                    historySummary: historySummary
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.error) {
+                throw new Error(result.error);
+            }
+
+            if (result.shouldEdit && result.modifiedText) {
+                console.log('Text modification applied:', result.plan);
+                
+                // Update text content
+                const previousText = textContent;
+                setTextContent(result.modifiedText);
+                
+                // Add to modification history
+                const newHistoryItem = {
+                    utterance: utterance,
+                    editPlan: result.plan || '',
+                    originalText: previousText,
+                    modifiedText: result.modifiedText,
+                };
+                
+                setModificationHistory(prev => [...prev, newHistoryItem]);
+                
+                // TODO: Update history summary (could be done with another API call)
+                
+                console.log('Text successfully modified');
+            } else {
+                console.log('No modification needed for utterance:', utterance);
+            }
+            
+        } catch (error) {
+            console.error('Error in text modification:', error);
+            throw error; // Re-throw to be handled by caller
+        }
+    }, [textContent, imagePreview, modificationHistory, historySummary]);
+
+    const processBufferedUtterances = useCallback(async () => {
+        if (isProcessing) return;
+        
+        // Check buffer conditions inline
+        let shouldProcess = false;
+        if (utteranceBuffer.length >= 3) {
+            console.log(`Buffer full, processing ${utteranceBuffer.length} utterances`);
+            shouldProcess = true;
+        } else if (utteranceBuffer.length > 0) {
+            const currentTime = Date.now();
+            const timeSinceLastComplete = (currentTime - lastCompleteTimeRef.current) / 1000;
+            if (timeSinceLastComplete >= 4.0) {
+                console.log(`Timeout processing after ${timeSinceLastComplete.toFixed(1)} seconds`);
+                shouldProcess = true;
+            }
+        }
+        
+        if (!shouldProcess || utteranceBuffer.length === 0) return;
+        
+        setIsProcessing(true);
+        
+        try {
+            // Get all utterances and clear buffer
+            const utterancesToProcess = [...utteranceBuffer];
+            setUtteranceBuffer([]);
+            
+            // Combine utterances (matching archive backend)
+            const combinedUtterance = utterancesToProcess.join('');
+            
+            console.log('Processing buffered utterances:', utterancesToProcess);
+            
+            await processTextModification(combinedUtterance);
+            
+            // Clear only the transcript items that were processed
+            setTranscriptItems(prev => prev.filter(item => 
+                !utterancesToProcess.includes(item.utteranceText)
+            ));
+            
+        } catch (error) {
+            console.error('Error processing buffered utterances:', error);
+            setError(`テキスト修正中にエラーが発生しました: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+            setIsProcessing(false);
+        }
+    }, [utteranceBuffer, isProcessing, processTextModification]);
+
+    // Periodic buffer check (matching archive backend - 0.1 second intervals)
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            processBufferedUtterances();
+        }, 100); // 0.1 seconds
+
+        return () => clearInterval(intervalId);
+    }, [processBufferedUtterances]); // Dependencies for useEffect
 
     const handleUploadComplete = (imageFile: File, imagePreview: string, generatedText: string) => {
         setImagePreview(imagePreview);
@@ -204,19 +337,22 @@ function ThinkAloudPage() {
                         if (isConnectedRef.current && isRecordingStateRef.current) {
                             if (message.transcript) {
                                 console.log('Transcript received:', message.transcript);
-                                // Add new transcript item
-                                const newItem = {
-                                    id: Date.now(),
-                                    text: message.transcript
-                                };
-                                setTranscriptItems(prev => [...prev, newItem]);
-                                
-                                // Remove this item after 3 seconds
-                                setTimeout(() => {
-                                    setTranscriptItems(prev => prev.filter(item => item.id !== newItem.id));
-                                }, 3000);
-                                
-                                // TODO: Send transcript to text modification API
+                                // Add to utterance buffer (only if not empty)
+                                const utterance = message.transcript.trim();
+                                if (utterance) {
+                                    // Add new transcript item for display
+                                    const newItem = {
+                                        id: Date.now(),
+                                        text: message.transcript,
+                                        utteranceText: utterance,
+                                        isProcessed: false
+                                    };
+                                    setTranscriptItems(prev => [...prev, newItem]);
+                                    
+                                    setUtteranceBuffer(prev => [...prev, utterance]);
+                                    lastCompleteTimeRef.current = Date.now();
+                                    console.log(`Added utterance to buffer: "${utterance}"`);
+                                }
                             }
                         }
                         break;
@@ -292,27 +428,63 @@ function ThinkAloudPage() {
         }
     };
 
-    const handleComplete = () => {
-        alert('実験が完了しました。ありがとうございました。');
-        router.push('/');
+    const handleComplete = async () => {
+        try {
+            // タイマーを停止
+            stopTimer();
+            
+            // 実験データを準備
+            const experimentData: ThinkAloudExperimentResult = {
+                userId,
+                experimentType: 'think-aloud',
+                productId: 'product1', // 現在はproduct1固定
+                originalText,
+                finalText: textContent,
+                startTime: getStartTimeISO() || new Date().toISOString(),
+                endTime: getEndTimeISO(),
+                durationSeconds: getDurationSeconds(),
+                intermediateSteps: modificationHistory.map(item => ({
+                    utterance: item.utterance,
+                    edit_plan: item.editPlan,
+                    modified_text: item.modifiedText,
+                    history_summary: historySummary
+                })),
+                isPracticeMode: isPractice,
+            };
+
+            // 保存を試行
+            const saveSuccess = await saveExperimentData(experimentData);
+            
+            if (saveSuccess) {
+                alert('実験が完了し、データが正常に保存されました。ありがとうございました。');
+            } else {
+                alert('実験は完了しましたが、データの保存に失敗しました。管理者にお知らせください。');
+            }
+            
+        } catch (error) {
+            console.error('Complete error:', error);
+            alert('実験は完了しましたが、データの保存中にエラーが発生しました。管理者にお知らせください。');
+        } finally {
+            router.push('/');
+        }
     };
 
     return (
         <div className="app-container">
-            <div className="content-area">
-                {mode === 'upload' ? (
-                    <ProductImageUploadPhase onComplete={handleUploadComplete} />
-                ) : (
-                    <div className="edit-phase">
-                        <div className="image-section">
-                            {imagePreview && (
-                                <img src={imagePreview} alt="商品画像" className="product-image" />
-                            )}
+            <Timer />
+            {mode === 'upload' ? (
+                <ProductImageUploadPhase onComplete={handleUploadComplete} />
+            ) : (
+                <div className="product-layout">
+                    <div className="product-image-container">
+                        {imagePreview && (
+                            <img src={imagePreview} alt="商品画像" className="product-image" />
+                        )}
+                    </div>
+                    <div className="product-description-container">
+                        <div className="text-header">
+                            <h3>商品説明</h3>
                         </div>
-                        <div className="text-section">
-                            <div className="text-header">
-                                <h3>商品説明</h3>
-                            </div>
                             <textarea
                                 className={`text-editor ${isRecording ? 'recording' : ''}`}
                                 value={textContent}
@@ -323,7 +495,12 @@ function ThinkAloudPage() {
                             <div className="controls">
                                 <div className="transcription-display">
                                     <div className="transcription-header">
-                                        {isRecording ? '🎙️ 音声認識中' : isTranscribing ? '接続中...' : '音声入力待機中'}
+                                        {isProcessing ? '⚙️ テキスト修正中...' : isRecording ? '🎙️ 音声認識中' : isTranscribing ? '接続中...' : '音声入力待機中'}
+                                        {utteranceBuffer.length > 0 && !isProcessing && (
+                                            <span className="buffer-status">
+                                                （バッファ: {utteranceBuffer.length}件）
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="transcript-items">
                                         {transcriptItems.map((item) => (
@@ -341,7 +518,7 @@ function ThinkAloudPage() {
                                 <button
                                     className="complete-button-full"
                                     onClick={handleComplete}
-                                    disabled={isRecording}
+                                    disabled={isProcessing}
                                 >
                                     完了
                                 </button>
@@ -349,7 +526,6 @@ function ThinkAloudPage() {
                         </div>
                     </div>
                 )}
-            </div>
 
             {error && <div className="error">{error}</div>}
         </div>
