@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { FaMicrophone, FaStop } from 'react-icons/fa';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductImageUploadPhase from '../components/ProductImageUploadPhase';
@@ -533,4 +533,12 @@ function ThinkAloudPage() {
     );
 }
 
-export default ThinkAloudPage;
+function ThinkAloudPageWithSuspense() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ThinkAloudPage />
+        </Suspense>
+    );
+}
+
+export default ThinkAloudPageWithSuspense;

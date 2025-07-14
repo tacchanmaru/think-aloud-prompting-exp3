@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+function getOpenAIClient() {
+    return new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+    });
+}
 
 export async function POST(request: NextRequest) {
     try {
@@ -18,6 +20,7 @@ export async function POST(request: NextRequest) {
         const audioFile = new File([audioBlob], "audio.webm", { type: "audio/webm; codecs=opus" });
 
 
+        const openai = getOpenAIClient();
         const transcription = await openai.audio.transcriptions.create({
             file: audioFile,
             model: 'gpt-4o-transcribe',

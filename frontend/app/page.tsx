@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, FC } from 'react';
 import { FaCog, FaTimes, FaUser } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './contexts/AuthContext';
@@ -190,14 +190,16 @@ function HomePage() {
                         <div className="menu-section">
                             <div className="section-title">練習用</div>
                             <button 
-                                className="menu-button practice"
-                                onClick={() => router.push("/manual-edit?practice=true")}
+                                className={`menu-button practice ${!userId ? 'disabled' : ''}`}
+                                onClick={() => userId && router.push("/manual-edit?practice=true")}
+                                disabled={!userId}
                             >
                                 手動編集（練習用）
                             </button>
                             <button 
-                                className="menu-button practice"
-                                onClick={() => router.push("/think-aloud?practice=true")}
+                                className={`menu-button practice ${!userId ? 'disabled' : ''}`}
+                                onClick={() => userId && router.push("/think-aloud?practice=true")}
+                                disabled={!userId}
                             >
                                 思考発話（練習用）
                             </button>
@@ -208,14 +210,16 @@ function HomePage() {
                         <div className="menu-section">
                             <div className="section-title">実験</div>
                             <button 
-                                className="menu-button"
-                                onClick={() => router.push("/manual-edit")}
+                                className={`menu-button ${!userId ? 'disabled' : ''}`}
+                                onClick={() => userId && router.push("/manual-edit")}
+                                disabled={!userId}
                             >
                                 手動編集
                             </button>
                             <button 
-                                className="menu-button"
-                                onClick={() => router.push("/think-aloud")}
+                                className={`menu-button ${!userId ? 'disabled' : ''}`}
+                                onClick={() => userId && router.push("/think-aloud")}
+                                disabled={!userId}
                             >
                                 思考発話
                             </button>

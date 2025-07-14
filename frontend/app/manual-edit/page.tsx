@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductImageUploadPhase from '../components/ProductImageUploadPhase';
 import Timer from '../components/Timer';
@@ -120,4 +120,12 @@ function ManualEditPage() {
     );
 }
 
-export default ManualEditPage;
+function ManualEditPageWithSuspense() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ManualEditPage />
+        </Suspense>
+    );
+}
+
+export default ManualEditPageWithSuspense;

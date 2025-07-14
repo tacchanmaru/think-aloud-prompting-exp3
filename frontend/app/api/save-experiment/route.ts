@@ -3,37 +3,42 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { ExperimentResult } from '../../../lib/types';
 
-// Firebase Admin初期化
-if (!getApps().length) {
-    try {
-        const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-        
-        if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !privateKey) {
-            throw new Error('Missing Firebase Admin environment variables');
-        }
-        
-        initializeApp({
-            credential: cert({
+// Firebase Admin初期化（ランタイム時のみ）
+function initializeFirebaseAdmin() {
+    if (!getApps().length) {
+        try {
+            const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+            
+            if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !privateKey) {
+                throw new Error('Missing Firebase Admin environment variables');
+            }
+            
+            initializeApp({
+                credential: cert({
+                    projectId: process.env.FIREBASE_PROJECT_ID,
+                    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                    privateKey: privateKey,
+                }),
                 projectId: process.env.FIREBASE_PROJECT_ID,
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                privateKey: privateKey,
-            }),
-            projectId: process.env.FIREBASE_PROJECT_ID,
-        });
-        
-        console.log('Firebase Admin initialized successfully');
-    } catch (error) {
-        console.error('Firebase Admin initialization failed:', error);
-        throw error;
+            });
+            
+            console.log('Firebase Admin initialized successfully');
+        } catch (error) {
+            console.error('Firebase Admin initialization failed:', error);
+            throw error;
+        }
     }
 }
 
 export async function POST(request: NextRequest) {
     try {
+        // Firebase Admin初期化（リクエスト時）
+        initializeFirebaseAdmin();
+        
         const experimentData: ExperimentResult = await request.json();
         
         // 必須フィールドのバリデーション
-        if (!experimentData.userId || !experimentData.experimentType || !experimentData.productId) {
+        if (experimentData.userId == null || !experimentData.experimentType || !experimentData.productId) {
             return NextResponse.json(
                 { error: 'Missing required fields: userId, experimentType, or productId' },
                 { status: 400 }
