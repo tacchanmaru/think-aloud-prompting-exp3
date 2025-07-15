@@ -10,47 +10,47 @@ body {
     overflow: hidden;
 }
 
-/* 共通の商品表示レイアウト */
+/* 共通の商品表示レイアウト (モバイルファースト) */
 .product-layout {
     display: flex;
     flex-direction: column;
     align-items: center;
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 32px;
+    max-width: 100%;
+    margin: 20px;
     min-height: 100vh;
     justify-content: flex-start;
     box-sizing: border-box;
 }
 
 .product-image-container {
-    width: 100%;
-    max-width: 400px;
+    display: flex;
+    justify-content: center;
+    max-width: 250px;
     margin-bottom: 24px;
 }
 
 .product-image {
-    width: 100%;
-    height: auto;
     border-radius: 8px;
     border: 1px solid #ced4da;
+    object-fit: contain;
 }
 
 .product-description-container {
     width: 100%;
     display: flex;
+    justify-content: center;
     flex-direction: column;
 }
 
-/* モバイル対応 */
-@media (max-width: 768px) {
+/* デスクトップ対応 */
+@media (min-width: 769px) {
     .product-layout {
-        padding: 20px;
-        max-width: 100%;
+        padding: 32px;
+        max-width: 600px;
     }
     
     .product-image-container {
-        max-width: 350px;
+        max-width: 400px;
     }
 }
 
@@ -487,8 +487,6 @@ body {
 }
 
 .text-editor {
-    width: 100%;
-    min-height: 400px;
     background-color: #ffffff;
     color: #212529;
     border: 1px solid #dee2e6;
@@ -496,10 +494,11 @@ body {
     padding: 16px;
     font-size: 16px;
     line-height: 1.6;
-    resize: vertical;
     transition: border-color 0.2s ease;
     white-space: pre-wrap;
+    margin-bottom: 20px;
 }
+
 
 .text-editor:focus {
     outline: none;
@@ -635,19 +634,11 @@ body {
     align-items: center;
 }
 
-.transcript-bubble {
-    background-color: #ffffff;
-    border: 1px solid #ced4da;
-    border-radius: 12px;
-    padding: 6px 12px;
+.transcript-text {
     color: #212529;
     font-size: 13px;
     word-wrap: break-word;
-    animation: bubbleIn 0.3s ease-in;
-    white-space: nowrap;
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.4;
 }
 
 .no-transcript {
@@ -658,16 +649,6 @@ body {
     width: 100%;
 }
 
-@keyframes bubbleIn {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
 
 /* Manual Edit page specific styles */
 .edit-status {
@@ -757,84 +738,151 @@ body {
     border: 1px solid #f5c6cb;
 }
 
-/* Mobile responsive adjustments */
-@media (max-width: 768px) {
+/* モバイルファーストのスタイル調整 */
+.edit-phase {
+    padding: 16px;
+    gap: 16px;
+}
+
+.upload-card {
+    padding: 24px;
+}
+
+.upload-area {
+    height: 250px;
+}
+
+.camera-button-main {
+    padding: 16px 32px;
+    font-size: 16px;
+    min-width: 180px;
+}
+
+.dev-default-button {
+    font-size: 11px;
+    padding: 6px 12px;
+}
+
+.text-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.controls {
+    flex-direction: column;
+    gap: 12px;
+}
+
+.transcription-header {
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.transcript-items {
+    padding: 10px;
+    min-height: 35px;
+    gap: 6px;
+}
+
+.no-transcript {
+    font-size: 12px;
+}
+
+.header-left h1 {
+    font-size: 18px;
+}
+
+.user-id {
+    font-size: 14px;
+}
+
+.timer-display {
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+}
+
+.timer-label {
+    font-size: 12px;
+}
+
+.timer-time {
+    font-size: 14px;
+}
+
+/* デスクトップ対応 */
+@media (min-width: 769px) {
     .edit-phase {
-        padding: 16px;
-        gap: 16px;
+        padding: 20px;
+        gap: 20px;
     }
     
     .upload-card {
-        padding: 24px;
+        padding: 32px;
     }
     
     .upload-area {
-        height: 250px;
+        height: 300px;
     }
     
     .camera-button-main {
-        padding: 16px 32px;
-        font-size: 16px;
-        min-width: 180px;
+        padding: 18px 40px;
+        font-size: 18px;
+        min-width: 200px;
     }
     
     .dev-default-button {
-        font-size: 11px;
-        padding: 6px 12px;
+        font-size: 12px;
+        padding: 8px 16px;
     }
     
     .text-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-    
-    .controls {
-        flex-direction: column;
+        flex-direction: row;
+        align-items: center;
         gap: 12px;
     }
     
+    .controls {
+        flex-direction: row;
+        gap: 16px;
+    }
+    
     .transcription-header {
-        padding: 8px 12px;
-        font-size: 13px;
+        padding: 10px 16px;
+        font-size: 14px;
     }
     
     .transcript-items {
-        padding: 10px;
-        min-height: 35px;
-        gap: 6px;
-    }
-    
-    .transcript-bubble {
-        font-size: 12px;
-        padding: 5px 10px;
-        max-width: 150px;
+        padding: 12px;
+        min-height: 40px;
+        gap: 8px;
     }
     
     .no-transcript {
-        font-size: 12px;
+        font-size: 13px;
     }
     
     .header-left h1 {
-        font-size: 18px;
+        font-size: 24px;
     }
     
     .user-id {
-        font-size: 14px;
+        font-size: 16px;
     }
     
     .timer-display {
-        top: 10px;
-        right: 10px;
-        padding: 8px 12px;
+        top: 20px;
+        right: 20px;
+        padding: 12px 16px;
     }
     
     .timer-label {
-        font-size: 12px;
+        font-size: 14px;
     }
     
     .timer-time {
-        font-size: 14px;
+        font-size: 16px;
     }
 }
 
@@ -877,12 +925,17 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 960px;
     width: 100%;
     margin: 0 auto;
     padding: 15px 20px;
     box-sizing: border-box;
     min-height: 54px;
+}
+
+@media (min-width: 769px) {
+    .header-content {
+        max-width: 960px;
+    }
 }
 
 .main-header h1 {
@@ -907,10 +960,15 @@ body {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    max-width: 960px;
     width: 100%;
     margin: 0 auto;
     box-sizing: border-box;
+}
+
+@media (min-width: 769px) {
+    .notes-list {
+        max-width: 960px;
+    }
 }
 
 /* 新規メモ入力エリア */
@@ -927,7 +985,6 @@ body {
 }
 
 .new-memo-content {
-    max-width: 960px;
     width: 100%;
     margin: 0 auto;
     background-color: #ffffff;
@@ -938,6 +995,12 @@ body {
     position: relative;
     overflow: hidden;
     transition: all 0.4s ease-in-out;
+}
+
+@media (min-width: 769px) {
+    .new-memo-content {
+        max-width: 960px;
+    }
 }
 
 .new-memo-content.camera-mode {
@@ -1247,7 +1310,6 @@ body {
 }
 
 .product-description {
-    max-width: 960px;
     width: 100%;
     text-align: left;
     background-color: #f8f9fa;
@@ -1255,6 +1317,12 @@ body {
     border-radius: 8px;
     padding: 1rem;
     margin: 1rem 0;
+}
+
+@media (min-width: 769px) {
+    .product-description {
+        max-width: 960px;
+    }
 }
 
 .product-name {

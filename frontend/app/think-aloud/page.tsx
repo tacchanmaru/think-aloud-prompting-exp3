@@ -656,14 +656,13 @@ function ThinkAloudPage() {
                                         )}
                                     </div>
                                     <div className="transcript-items">
-                                        {transcriptItems.map((item) => (
-                                            <span key={item.id} className="transcript-bubble">
-                                                {item.text}
-                                            </span>
-                                        ))}
-                                        {transcriptItems.length === 0 && (
+                                        {transcriptItems.length === 0 ? (
                                             <span className="no-transcript">
                                                 まだ音声が認識されていません
+                                            </span>
+                                        ) : (
+                                            <span className="transcript-text">
+                                                {transcriptItems.map((item) => item.text).join('')}
                                             </span>
                                         )}
                                     </div>
