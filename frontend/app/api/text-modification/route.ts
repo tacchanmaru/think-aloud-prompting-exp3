@@ -16,13 +16,6 @@ interface TextModificationHistory {
     modifiedText: string;
 }
 
-interface TextModificationResult {
-    shouldEdit: boolean;
-    modifiedText?: string;
-    plan?: string;
-    editPlan?: string;
-}
-
 interface JsonModificationCommand {
     line: number;
     command: 'add' | 'delete' | 'modify';
@@ -241,10 +234,9 @@ export async function POST(request: NextRequest) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                model: 'gpt-4o-mini',
+                model: 'gpt-4.1-mini',
                 messages: messages,
-                temperature: 0.1,
-                max_tokens: 1500,
+                temperature: 0,
             }),
         });
 

@@ -45,6 +45,7 @@ function ThinkAloudPage() {
     const [utteranceBuffer, setUtteranceBuffer] = useState<string[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const lastCompleteTimeRef = useRef<number>(Date.now());
+    const [isDescriptionClicked, setIsDescriptionClicked] = useState(false);
     
     const websocketRef = useRef<WebSocket | null>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
@@ -52,6 +53,7 @@ function ThinkAloudPage() {
     const isConnectedRef = useRef<boolean>(false);
     const isRecordingStateRef = useRef<boolean>(false);
     const streamRef = useRef<MediaStream | null>(null);
+    const descriptionDisplayRef = useRef<HTMLDivElement | null>(null);
 
     // Buffer processing logic (matching archive backend) - moved inline to processBufferedUtterances
 
@@ -99,9 +101,11 @@ function ThinkAloudPage() {
                     modifiedText: result.modifiedText,
                 };
                 
-                setModificationHistory(prev => [...prev, newHistoryItem]);
+                const updatedHistory = [...modificationHistory, newHistoryItem];
+                setModificationHistory(updatedHistory);
                 
-                // TODO: Update history summary (could be done with another API call)
+                // Update history summary asynchronously
+                updateHistorySummary(updatedHistory);
                 
                 console.log('Text successfully modified');
             } else {
@@ -113,6 +117,47 @@ function ThinkAloudPage() {
             throw error; // Re-throw to be handled by caller
         }
     }, [textContent, imagePreview, modificationHistory, historySummary]);
+
+    const updateHistorySummary = useCallback(async (history: typeof modificationHistory) => {
+        // history summaryの更新は編集履歴が2つ以上の場合のみ実行
+        if (history.length < 2) {
+            return;
+        }
+
+        try {
+            console.log('Updating history summary for', history.length, 'modifications');
+            
+            const response = await fetch('/api/history-summary', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    history: history.map(item => ({
+                        utterance: item.utterance,
+                        editPlan: item.editPlan,
+                        originalText: item.originalText,
+                        modifiedText: item.modifiedText,
+                    }))
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`History summary API error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.historySummary) {
+                setHistorySummary(result.historySummary);
+                console.log('History summary updated:', result.historySummary);
+            }
+            
+        } catch (error) {
+            console.error('Error updating history summary:', error);
+            // History summary更新の失敗は致命的エラーではないため、メイン処理は継続
+        }
+    }, []);
 
     const processBufferedUtterances = useCallback(async () => {
         if (isProcessing) return;
@@ -168,6 +213,85 @@ function ThinkAloudPage() {
 
         return () => clearInterval(intervalId);
     }, [processBufferedUtterances]); // Dependencies for useEffect
+
+    // 前のテキストを取得する関数
+    const getPreviousText = () => {
+        if (modificationHistory.length > 0) {
+            if (modificationHistory.length === 1) return originalText;
+            if (modificationHistory.length >= 2) return modificationHistory[modificationHistory.length - 2].modifiedText;
+            return originalText;
+        }
+        return originalText;
+    };
+
+    // 行単位での差分を計算する関数
+    const calculateLineDiff = (originalText: string, currentText: string) => {
+        const originalLines = originalText.split('\n');
+        const currentLines = currentText.split('\n');
+        
+        // LCS（最長共通部分列）を使用した差分計算
+        const lcs = calculateLCS(originalLines, currentLines);
+        const result: Array<{ content: string; type: 'unchanged' | 'added' | 'removed' }> = [];
+        
+        let i = 0, j = 0, k = 0;
+        
+        while (i < originalLines.length || j < currentLines.length) {
+            if (k < lcs.length && i < originalLines.length && j < currentLines.length && 
+                originalLines[i] === lcs[k] && currentLines[j] === lcs[k]) {
+                // 共通の行
+                result.push({ content: currentLines[j], type: 'unchanged' });
+                i++;
+                j++;
+                k++;
+            } else if (i < originalLines.length && (k >= lcs.length || originalLines[i] !== lcs[k])) {
+                // 削除された行
+                result.push({ content: originalLines[i], type: 'removed' });
+                i++;
+            } else if (j < currentLines.length && (k >= lcs.length || currentLines[j] !== lcs[k])) {
+                // 追加された行
+                result.push({ content: currentLines[j], type: 'added' });
+                j++;
+            }
+        }
+        
+        return result;
+    };
+
+    // 最長共通部分列（LCS）を計算する関数
+    const calculateLCS = (arr1: string[], arr2: string[]): string[] => {
+        const m = arr1.length;
+        const n = arr2.length;
+        const dp: number[][] = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+        
+        // DPテーブルを構築
+        for (let i = 1; i <= m; i++) {
+            for (let j = 1; j <= n; j++) {
+                if (arr1[i - 1] === arr2[j - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        
+        // LCSを復元
+        const lcs: string[] = [];
+        let i = m, j = n;
+        
+        while (i > 0 && j > 0) {
+            if (arr1[i - 1] === arr2[j - 1]) {
+                lcs.unshift(arr1[i - 1]);
+                i--;
+                j--;
+            } else if (dp[i - 1][j] > dp[i][j - 1]) {
+                i--;
+            } else {
+                j--;
+            }
+        }
+        
+        return lcs;
+    };
 
     const handleUploadComplete = (imageFile: File, imagePreview: string, generatedText: string) => {
         setImagePreview(imagePreview);
@@ -484,15 +608,43 @@ function ThinkAloudPage() {
                     </div>
                     <div className="product-description-container">
                         <div className="text-header">
-                            <h3>商品説明</h3>
+                            <h3>商品説明（クリックで削除行も表示）</h3>
                         </div>
-                            <textarea
-                                className={`text-editor ${isRecording ? 'recording' : ''}`}
-                                value={textContent}
-                                onChange={(e) => setTextContent(e.target.value)}
-                                placeholder="商品説明を編集してください..."
-                                rows={10}
-                            />
+                        <div
+                            ref={descriptionDisplayRef}
+                            className={`text-editor ${isRecording ? 'recording' : ''} cursor-pointer select-none`}
+                            onMouseDown={() => setIsDescriptionClicked(true)}
+                            onMouseUp={() => setIsDescriptionClicked(false)}
+                            onMouseLeave={() => setIsDescriptionClicked(false)}
+                            style={{ minHeight: '240px', whiteSpace: 'pre-line', wordWrap: 'break-word' }}
+                        >
+                            {textContent ? (
+                                modificationHistory.length > 0 ? (
+                                    <div>
+                                        {calculateLineDiff(getPreviousText() || '', textContent)
+                                            .filter(line => isDescriptionClicked || line.type !== 'removed')
+                                            .map((line, index) => (
+                                            <div
+                                                key={index}
+                                                className={`${
+                                                    line.type === 'added'
+                                                        ? 'bg-yellow-100'
+                                                        : line.type === 'removed'
+                                                        ? 'bg-red-100'
+                                                        : 'bg-white'
+                                                } ${line.content.trim() === '' ? 'min-h-[1em]' : ''}`}
+                                            >
+                                                {line.content || '\u00A0'}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div>{textContent}</div>
+                                )
+                            ) : (
+                                <span style={{ color: '#888' }}>商品説明を編集してください...</span>
+                            )}
+                        </div>
                             <div className="controls">
                                 <div className="transcription-display">
                                     <div className="transcription-header">
