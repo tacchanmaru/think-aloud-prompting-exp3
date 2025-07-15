@@ -123,13 +123,13 @@ body {
 
 .menu-button {
     width: 100%;
-    padding: 16px 20px;
+    padding: 14px 20px;
     margin-bottom: 12px;
     background-color: #007bff;
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
