@@ -101,23 +101,12 @@ const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onCom
                     {imagePreview ? (
                         <img src={imagePreview} alt="選択された画像" className="product-image" />
                     ) : (
-                        <div className="upload-placeholder">
+                        <div className="upload-placeholder clickable-upload" onClick={handleTakePhoto}>
                             <FaImage />
-                            <p>商品の写真を撮影してください</p>
+                            <p>商品の写真を撮影</p>
                         </div>
                     )}
                 </div>
-                
-                {!generatedText && (
-                    <div className="upload-buttons">
-                        <button 
-                            className="camera-button-main"
-                            onClick={handleTakePhoto}
-                        >
-                            📸 写真を撮る
-                        </button>
-                    </div>
-                )}
                 
                 <input
                     ref={cameraInputRef}
