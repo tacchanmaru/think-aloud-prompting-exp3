@@ -2,14 +2,20 @@
 
 import { useState, useRef } from 'react';
 import { FaImage } from 'react-icons/fa';
-import { product1 } from '../../lib/products';
+import { product1, product2, practiceData } from '../../lib/products';
 import { useTimer } from '../contexts/TimerContext';
+import { getProductForExperiment, ExperimentPageType } from '../../lib/experimentUtils';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ProductImageUploadPhaseProps {
     onComplete: (imageFile: File, imagePreview: string, generatedText: string) => void;
+    isPractice?: boolean;
+    pageType: ExperimentPageType;
 }
 
-const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onComplete }) => {
+const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onComplete, isPractice = false, pageType }) => {
+    const { userId } = useAuth();
+    const currentProduct = getProductForExperiment(userId, pageType, isPractice);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -45,14 +51,20 @@ const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onCom
     };
 
     const handleUseDefaultImage = () => {
-        // Use the ferret image that already exists in public/images/
-        const defaultImageUrl = '/images/ferret.jpeg';
+        // Use current product's image
+        const defaultImageUrl = currentProduct.imagePreviewUrl;
+        const fileName = currentProduct.imagePreviewUrl?.split('/').pop() || 'default.jpeg';
         
         // Create a sample file object for consistency
+        if (!defaultImageUrl) {
+            setError('デフォルト画像が見つかりません。');
+            return;
+        }
+        
         fetch(defaultImageUrl)
             .then(res => res.blob())
             .then(blob => {
-                const file = new File([blob], 'ferret.jpeg', { type: 'image/jpeg' });
+                const file = new File([blob], fileName, { type: 'image/jpeg' });
                 setImageFile(file);
                 setImagePreview(defaultImageUrl);
             })
@@ -73,8 +85,8 @@ const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onCom
             // For now, simulate with a delay and generate sample text based on image
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // Use ferret product text from products.ts
-            const randomText = product1.text;
+            // Use current product's text
+            const randomText = currentProduct.text;
             
             // Store the generated text and show the start button
             setGeneratedText(randomText);
@@ -97,6 +109,9 @@ const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onCom
         <div className="upload-phase">
             <div className="product-layout">
                 <h2>画像から商品説明を生成</h2>
+                {!imagePreview && (
+                    <p className="target-product">対象：{currentProduct.name}</p>
+                )}
                 <div className="product-image-container">
                     {imagePreview ? (
                         <img src={imagePreview} alt="選択された画像" className="product-image" />

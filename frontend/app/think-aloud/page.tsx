@@ -9,6 +9,7 @@ import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
 import { ThinkAloudExperimentResult, IntermediateStep } from '../../lib/types';
+import { ExperimentPageType } from '../../lib/experimentUtils';
 
 
 // =========== ThinkAloudPage Component ===========
@@ -598,7 +599,7 @@ function ThinkAloudPage() {
         <div className="app-container">
             {mode === 'edit' && <Timer />}
             {mode === 'upload' ? (
-                <ProductImageUploadPhase onComplete={handleUploadComplete} />
+                <ProductImageUploadPhase onComplete={handleUploadComplete} isPractice={isPractice} pageType={ExperimentPageType.ThinkAloud} />
             ) : (
                 <div className="product-layout">
                     <div className="product-image-container">

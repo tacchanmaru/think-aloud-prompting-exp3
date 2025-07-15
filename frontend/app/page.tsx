@@ -25,16 +25,10 @@ const UserIdSetting = () => {
         }
     };
 
-    const handleClear = () => {
-        setUserId(null);
-        setInputValue('');
-    };
-
     return (
         <div className="auth-section">
             <h4>ユーザー設定</h4>
             <div className="setting-item">
-                <label htmlFor="userId">ユーザーID (1-100)</label>
                 <input
                     id="userId"
                     type="number"
@@ -49,11 +43,6 @@ const UserIdSetting = () => {
                         <FaUser />
                         設定
                     </button>
-                    {userId && (
-                        <button onClick={handleClear} className="auth-button">
-                            クリア
-                        </button>
-                    )}
                 </div>
             </div>
             {userId && (

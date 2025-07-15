@@ -264,6 +264,14 @@ body {
     margin: 0;
 }
 
+.target-product {
+    font-size: 16px;
+    color: #007bff;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
 .clickable-upload {
     cursor: pointer;
     transition: all 0.2s ease;
