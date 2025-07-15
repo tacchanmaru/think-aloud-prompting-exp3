@@ -56,29 +56,29 @@ body {
 
 /* タイマー表示 */
 .timer-display {
-    position: fixed;
-    top: 20px;
-    right: 20px;
+    position: static;
     background-color: #f8f9fa;
     border: 1px solid #ced4da;
     border-radius: 8px;
-    padding: 12px 16px;
+    padding: 8px 12px;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    z-index: 1000;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    max-width: 200px;
+    margin-left: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .timer-label {
     color: #495057;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
 }
 
 .timer-time {
     color: #212529;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     font-family: 'Courier New', monospace;
     letter-spacing: 1px;
@@ -216,7 +216,7 @@ body {
     align-items: center;
     justify-content: center;
     height: 100%;
-    padding: 20px;
+    /* padding: 20px; */
 }
 
 .upload-card {
@@ -361,11 +361,18 @@ body {
     text-align: center;
 }
 
+.product-description-header {
+    margin: 0;
+    color: #212529;
+    font-size: 18px;
+    font-weight: 600;
+}
+
 .generated-text {
     background-color: #f8f9fa;
     border: 1px solid #ced4da;
     border-radius: 8px;
-    padding: 16px;
+    padding: 14px;
     margin-bottom: 20px;
     color: #212529;
     font-size: 16px;
@@ -431,7 +438,7 @@ body {
 .text-header h3 {
     margin: 0;
     color: #212529;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
 }
 
@@ -491,7 +498,7 @@ body {
     color: #212529;
     border: 1px solid #dee2e6;
     border-radius: 8px;
-    padding: 16px;
+    padding: 14px;
     font-size: 16px;
     line-height: 1.6;
     transition: border-color 0.2s ease;
@@ -797,19 +804,6 @@ body {
     font-size: 14px;
 }
 
-.timer-display {
-    top: 10px;
-    right: 10px;
-    padding: 8px 12px;
-}
-
-.timer-label {
-    font-size: 12px;
-}
-
-.timer-time {
-    font-size: 14px;
-}
 
 /* デスクトップ対応 */
 @media (min-width: 769px) {
@@ -872,8 +866,7 @@ body {
     }
     
     .timer-display {
-        top: 20px;
-        right: 20px;
+        max-width: 250px;
         padding: 12px 16px;
     }
     

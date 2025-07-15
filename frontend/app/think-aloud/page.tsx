@@ -608,7 +608,7 @@ function ThinkAloudPage() {
                     </div>
                     <div className="product-description-container">
                         <div className="text-header">
-                            <h3>商品説明（クリックで削除行も表示）</h3>
+                            <h3 className="product-description-header">商品説明（タップで削除行も表示）</h3>
                         </div>
                         <div
                             ref={descriptionDisplayRef}

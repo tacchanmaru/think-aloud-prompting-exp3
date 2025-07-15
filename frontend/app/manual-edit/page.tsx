@@ -95,7 +95,7 @@ function ManualEditPage() {
                     </div>
                     <div className="product-description-container">
                         <div className="text-header">
-                            <h3>商品説明</h3>
+                            <h3 className="product-description-header">商品説明</h3>
                         </div>
                             <textarea
                                 className="text-editor"

@@ -160,7 +160,7 @@ const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onCom
                 
                 {generatedText && (
                     <div className="product-description-container">
-                        <h3>生成された商品説明</h3>
+                        <h3 className="product-description-header">生成された商品説明</h3>
                         <div className="generated-text">
                             {generatedText}
                         </div>
