@@ -582,7 +582,7 @@ function ThinkAloudPage() {
             const saveSuccess = await saveExperimentData(experimentData);
             
             if (saveSuccess) {
-                alert('実験が完了し、データが正常に保存されました。ありがとうございました。');
+                alert('実験が完了しました。ありがとうございました。');
             } else {
                 alert('実験は完了しましたが、データの保存に失敗しました。管理者にお知らせください。');
             }
