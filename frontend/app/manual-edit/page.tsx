@@ -83,7 +83,7 @@ function ManualEditPage() {
 
     return (
         <div className="app-container">
-            <Timer />
+            {mode === 'edit' && <Timer />}
             {mode === 'upload' ? (
                 <ProductImageUploadPhase onComplete={handleUploadComplete} />
             ) : (
