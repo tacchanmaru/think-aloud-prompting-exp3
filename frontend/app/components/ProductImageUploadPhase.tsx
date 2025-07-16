@@ -8,12 +8,13 @@ import { getProductForExperiment, ExperimentPageType } from '../../lib/experimen
 import { useAuth } from '../contexts/AuthContext';
 
 interface ProductImageUploadPhaseProps {
-    onComplete: (imageFile: File, imagePreview: string, generatedText: string) => void;
+    onComplete: (imageFile: File, imagePreview: string, generatedText: string) => Promise<void>;
     isPractice?: boolean;
     pageType: ExperimentPageType;
+    onMicrophoneConnecting?: (isConnecting: boolean) => void;
 }
 
-const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onComplete, isPractice = false, pageType }) => {
+const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onComplete, isPractice = false, pageType, onMicrophoneConnecting }) => {
     const { userId } = useAuth();
     const currentProduct = getProductForExperiment(userId, pageType, isPractice);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -22,6 +23,7 @@ const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onCom
     const [error, setError] = useState<string | null>(null);
     const [generatedText, setGeneratedText] = useState<string | null>(null);
     const [showStartButton, setShowStartButton] = useState(false);
+    const [isConnectingMicrophone, setIsConnectingMicrophone] = useState(false);
     
     const { startTimer } = useTimer();
 
@@ -98,10 +100,18 @@ const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onCom
         }
     };
 
-    const handleStartEditing = () => {
+    const handleStartEditing = async () => {
         if (imageFile && imagePreview && generatedText) {
-            startTimer(); // タイマーを開始
-            onComplete(imageFile, imagePreview, generatedText);
+            setIsConnectingMicrophone(true);
+            
+            try {
+                // Wait for parent to handle microphone permission + WebSocket connection
+                await onComplete(imageFile, imagePreview, generatedText);
+            } catch (error) {
+                console.error('Failed to start editing:', error);
+                setError('編集の開始に失敗しました。');
+                setIsConnectingMicrophone(false);
+            }
         }
     };
 
@@ -169,12 +179,21 @@ const ProductImageUploadPhase: React.FC<ProductImageUploadPhaseProps> = ({ onCom
                             {generatedText}
                         </div>
                         {showStartButton && (
-                            <button 
-                                className="start-edit-button"
-                                onClick={handleStartEditing}
-                            >
-                                編集開始
-                            </button>
+                            <div>
+                                {isConnectingMicrophone && (
+                                    <div className="microphone-connecting">
+                                        <div className="spinner"></div>
+                                        <p>マイクに接続中...</p>
+                                    </div>
+                                )}
+                                <button 
+                                    className="start-edit-button"
+                                    onClick={handleStartEditing}
+                                    disabled={isConnectingMicrophone}
+                                >
+                                    {isConnectingMicrophone ? '接続中...' : '編集開始'}
+                                </button>
+                            </div>
                         )}
                     </div>
                 )}

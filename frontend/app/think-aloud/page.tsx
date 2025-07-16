@@ -15,7 +15,7 @@ function ThinkAloudPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const isPractice = searchParams.get('practice') === 'true';
-    const { stopTimer, getStartTimeISO, getEndTimeISO, getDurationSeconds } = useTimer();
+    const { startTimer, stopTimer, getStartTimeISO, getEndTimeISO, getDurationSeconds } = useTimer();
     const { userId } = useAuth();
     
     const [mode, setMode] = useState<'upload' | 'edit'>('upload');
@@ -53,6 +53,7 @@ function ThinkAloudPage() {
     const isRecordingStateRef = useRef<boolean>(false);
     const streamRef = useRef<MediaStream | null>(null);
     const descriptionDisplayRef = useRef<HTMLDivElement | null>(null);
+    const isWaitingPermissionRef = useRef<boolean>(false);
 
     // Buffer processing logic (matching archive backend) - moved inline to processBufferedUtterances
 
@@ -292,16 +293,42 @@ function ThinkAloudPage() {
         return lcs;
     };
 
-    const handleUploadComplete = (imageFile: File, imagePreview: string, generatedText: string) => {
+    const handleUploadComplete = async (imageFile: File, imagePreview: string, generatedText: string) => {
         setImagePreview(imagePreview);
         setTextContent(generatedText);
         setOriginalText(generatedText);
-        setMode('edit');
         
-        // Automatically start recording when entering edit mode
-        setTimeout(() => {
-            startRecording();
-        }, 500); // Small delay to ensure UI has updated
+        // Start recording and wait for it to be fully connected
+        try {
+            await startRecordingAndWaitForConnection();
+            
+            // Once recording is active, start timer and switch to edit mode
+            startTimer();
+            setMode('edit');
+        } catch (error) {
+            console.error('Failed to start recording:', error);
+            setError('録音の開始に失敗しました。ページを更新してもう一度お試しください。');
+        }
+    };
+
+    const startRecordingAndWaitForConnection = async () => {
+        try {
+            // Request microphone permission first
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop());
+            
+            // Start the recording process and wait for connection
+            await startRecording();
+            
+            // Add a simple delay to ensure WebSocket connection is established
+            // Since startRecording already handles the WebSocket connection process
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+        } catch (error) {
+            console.error('Microphone permission denied:', error);
+            setError('マイクの許可が必要です。ブラウザの設定を確認してください。');
+            throw error;
+        }
     };
 
     const handleRecordClick = () => {
@@ -350,6 +377,13 @@ function ThinkAloudPage() {
                 isRecordingStateRef.current = true;
                 setIsRecording(true);
                 setIsTranscribing(false);
+                
+                // Start timer when audio recording actually begins
+                if (isWaitingPermissionRef.current) {
+                    startTimer();
+                    setMode('edit');
+                    isWaitingPermissionRef.current = false;
+                }
 
                 // Send transcription session configuration
                 const configMessage = {
@@ -646,7 +680,7 @@ function ThinkAloudPage() {
                             <div className="controls">
                                 <div className="transcription-display">
                                     <div className="transcription-header">
-                                        {isProcessing ? '⚙️ テキスト修正中...' : isRecording ? '🎙️ 音声認識中' : isTranscribing ? '接続中...' : '音声入力待機中'}
+                                        {isProcessing ? '⚙️ テキスト修正中...' : '🎙️ 音声認識中'}
                                         {utteranceBuffer.length > 0 && !isProcessing && (
                                             <span className="buffer-status">
                                                 （バッファ: {utteranceBuffer.length}件）
