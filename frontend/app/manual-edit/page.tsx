@@ -29,7 +29,7 @@ function ManualEditPage() {
     const [hasEdited, setHasEdited] = useState(false);
 
 
-    const handleUploadComplete = (imageFile: File, imagePreview: string, generatedText: string) => {
+    const handleUploadComplete = async (imageFile: File, imagePreview: string, generatedText: string) => {
         setImagePreview(imagePreview);
         setTextContent(generatedText);
         setOriginalText(generatedText); // 元のテキストとして保存
