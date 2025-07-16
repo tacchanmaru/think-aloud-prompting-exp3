@@ -3,7 +3,6 @@
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductImageUploadPhase from '../components/ProductImageUploadPhase';
-import Timer from '../components/Timer';
 import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
@@ -84,7 +83,6 @@ function ManualEditPage() {
 
     return (
         <div className="app-container">
-            {mode === 'edit' && <Timer />}
             {mode === 'upload' ? (
                 <ProductImageUploadPhase onComplete={handleUploadComplete} isPractice={isPractice} pageType={ExperimentPageType.ManualEdit} />
             ) : (

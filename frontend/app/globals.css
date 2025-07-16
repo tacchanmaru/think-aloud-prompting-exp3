@@ -6,8 +6,9 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     margin: 0;
     padding: 0;
-    height: 100%;
-    overflow: hidden;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 /* 共通の商品表示レイアウト (モバイルファースト) */
@@ -17,7 +18,7 @@ body {
     align-items: center;
     max-width: 100%;
     margin: 0px 20px;
-    min-height: 100vh;
+    padding: 20px 0;
     justify-content: flex-start;
     box-sizing: border-box;
 }
@@ -42,48 +43,6 @@ body {
     display: flex;
     justify-content: center;
     flex-direction: column;
-}
-
-/* デスクトップ対応 */
-@media (min-width: 769px) {
-    .product-layout {
-        padding: 32px;
-        max-width: 600px;
-    }
-    
-    .product-image-container {
-        max-width: 400px;
-    }
-}
-
-/* タイマー表示 */
-.timer-display {
-    position: static;
-    background-color: #f8f9fa;
-    border: 1px solid #ced4da;
-    border-radius: 8px;
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    max-width: 200px;
-    margin-left: auto;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.timer-label {
-    color: #495057;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.timer-time {
-    color: #212529;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: 'Courier New', monospace;
-    letter-spacing: 1px;
 }
 
 /* ホームページ用のスタイル */
@@ -438,9 +397,10 @@ body {
 .edit-phase {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    min-height: 100%;
     padding: 20px;
     gap: 20px;
+    overflow-y: auto;
 }
 
 .image-section {
@@ -529,7 +489,6 @@ body {
     transition: border-color 0.2s ease;
     white-space: pre-wrap;
     margin-bottom: 20px;
-    field-sizing: content;
 }
 
 
@@ -830,81 +789,6 @@ body {
     font-size: 14px;
 }
 
-
-/* デスクトップ対応 */
-@media (min-width: 769px) {
-    .edit-phase {
-        padding: 20px;
-        gap: 20px;
-    }
-    
-    .upload-card {
-        padding: 32px;
-    }
-    
-    .upload-area {
-        height: 300px;
-    }
-    
-    .camera-button-main {
-        padding: 18px 40px;
-        font-size: 18px;
-        min-width: 200px;
-    }
-    
-    .dev-default-button {
-        font-size: 12px;
-        padding: 8px 16px;
-    }
-    
-    .text-header {
-        flex-direction: row;
-        align-items: center;
-        gap: 12px;
-    }
-    
-    .controls {
-        flex-direction: row;
-        gap: 16px;
-    }
-    
-    .transcription-header {
-        padding: 10px 16px;
-        font-size: 14px;
-    }
-    
-    .transcript-items {
-        padding: 12px;
-        min-height: 40px;
-        gap: 8px;
-    }
-    
-    .no-transcript {
-        font-size: 13px;
-    }
-    
-    .header-left h1 {
-        font-size: 24px;
-    }
-    
-    .user-id {
-        font-size: 16px;
-    }
-    
-    .timer-display {
-        max-width: 250px;
-        padding: 12px 16px;
-    }
-    
-    .timer-label {
-        font-size: 14px;
-    }
-    
-    .timer-time {
-        font-size: 16px;
-    }
-}
-
 .memos-container {
     height: 100dvh;
     display: flex;
@@ -917,12 +801,13 @@ body {
 }
 
 .app-container {
-    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     width: 100%;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
 }

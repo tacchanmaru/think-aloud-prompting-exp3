@@ -1,10 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
-import { FaMicrophone, FaStop } from 'react-icons/fa';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductImageUploadPhase from '../components/ProductImageUploadPhase';
-import Timer from '../components/Timer';
 import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
@@ -597,7 +595,6 @@ function ThinkAloudPage() {
 
     return (
         <div className="app-container">
-            {mode === 'edit' && <Timer />}
             {mode === 'upload' ? (
                 <ProductImageUploadPhase onComplete={handleUploadComplete} isPractice={isPractice} pageType={ExperimentPageType.ThinkAloud} />
             ) : (
