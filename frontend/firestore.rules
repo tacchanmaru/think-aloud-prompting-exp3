@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // usersコレクションの各ドキュメントに対するルール
+    match /users/{userId}/{documents=**} {
+      // リクエストしてきたユーザーのuidが、ドキュメントのパスに含まれるuserIdと一致する場合のみ、
+      // 読み取りと書き込み（作成、更新、削除）を許可する。
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+} 
