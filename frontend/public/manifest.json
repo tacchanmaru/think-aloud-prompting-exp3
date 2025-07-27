@@ -4,9 +4,9 @@
     "display": "standalone",
     "scope": "/",
     "start_url": "/",
-    "name": "Memos App",
-    "short_name": "Memos",
-    "description": "A simple note-taking app with voice transcription.",
+    "name": "TA-Prompting for product description",
+    "short_name": "TA-Prompting for product description",
+    "description": "think-aloud-prompting for product description",
     "icons": [
         {
             "src": "/icons/icon-192x192.png",
