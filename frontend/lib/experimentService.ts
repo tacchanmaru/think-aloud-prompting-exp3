@@ -47,12 +47,12 @@ export function getProductIdForUser(userId: string, experimentType: 'manual' | '
     
     const userIndex = Math.abs(hashCode) % 4;
     
-    // Manual: product1, product2を使用
-    // Think-Aloud: product3, product4を使用（異なる商品でバランス化）
+    // Manual: mail1, mail2を使用
+    // Think-Aloud: mail1, mail2を使用（メールでバランス化）
     if (experimentType === 'manual') {
-        return userIndex < 2 ? 'product1' : 'product2';
+        return userIndex < 2 ? 'mail1' : 'mail2';
     } else {
-        return userIndex < 2 ? 'product1' : 'product2'; // 現在はproduct1, product2のみ存在
+        return userIndex < 2 ? 'mail1' : 'mail2'; // 現在はmail1, mail2のみ存在
     }
 }
 

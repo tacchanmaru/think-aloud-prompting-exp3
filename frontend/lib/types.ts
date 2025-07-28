@@ -2,7 +2,7 @@
 export interface BaseExperimentData {
     userId: number;        // 1-100の範囲のユーザーID
     experimentType: 'manual' | 'think-aloud';
-    productId: string;
+    mailId: string;
     originalText: string;
     finalText: string;
     startTime: string; // ISO形式

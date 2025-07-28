@@ -2,12 +2,11 @@
 
 import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import ProductImageUploadPhase from '../components/ProductImageUploadPhase';
 import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
 import { ThinkAloudExperimentResult, IntermediateStep } from '../../lib/types';
-import { ExperimentPageType } from '../../lib/experimentUtils';
+import { getMailForExperiment, ExperimentPageType } from '../../lib/experimentUtils';
 
 
 // =========== ThinkAloudPage Component ===========
@@ -18,13 +17,11 @@ function ThinkAloudPage() {
     const { startTimer, stopTimer, getStartTimeISO, getEndTimeISO, getDurationSeconds } = useTimer();
     const { userId } = useAuth();
     
-    const [mode, setMode] = useState<'upload' | 'edit'>('upload');
+    // Get the mail data for this user
+    const currentMail = getMailForExperiment(userId, ExperimentPageType.ThinkAloud, isPractice);
     
-    // Application state
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    
-    // Text editing state
-    const [textContent, setTextContent] = useState('');
+    // Text editing state - initialize with mail text
+    const [textContent, setTextContent] = useState(currentMail.text);
     const [modificationHistory, setModificationHistory] = useState<{
         utterance: string;
         editPlan: string;
@@ -32,7 +29,7 @@ function ThinkAloudPage() {
         modifiedText: string;
     }[]>([]);
     const [historySummary, setHistorySummary] = useState('');
-    const [originalText, setOriginalText] = useState('');
+    const [originalText, setOriginalText] = useState(currentMail.text);
     
     // Audio recording state
     const [isRecording, setIsRecording] = useState(false);
@@ -70,7 +67,6 @@ function ThinkAloudPage() {
                 body: JSON.stringify({
                     text: textContent,
                     utterance: utterance,
-                    imageBase64: imagePreview ? imagePreview.split(',')[1] : undefined,
                     history: modificationHistory,
                     historySummary: historySummary
                 }),
@@ -116,7 +112,7 @@ function ThinkAloudPage() {
             console.error('Error in text modification:', error);
             throw error; // Re-throw to be handled by caller
         }
-    }, [textContent, imagePreview, modificationHistory, historySummary]);
+    }, [textContent, modificationHistory, historySummary]);
 
     const updateHistorySummary = useCallback(async (history: typeof modificationHistory) => {
         // history summaryの更新は編集履歴が2つ以上の場合のみ実行
@@ -293,23 +289,20 @@ function ThinkAloudPage() {
         return lcs;
     };
 
-    const handleUploadComplete = async (imageFile: File, imagePreview: string, generatedText: string) => {
-        setImagePreview(imagePreview);
-        setTextContent(generatedText);
-        setOriginalText(generatedText);
+    // Auto-start recording when component mounts
+    useEffect(() => {
+        const initializeRecording = async () => {
+            try {
+                await startRecordingAndWaitForConnection();
+                startTimer();
+            } catch (error) {
+                console.error('Failed to start recording:', error);
+                setError('録音の開始に失敗しました。ページを更新してもう一度お試しください。');
+            }
+        };
         
-        // Start recording and wait for it to be fully connected
-        try {
-            await startRecordingAndWaitForConnection();
-            
-            // Once recording is active, start timer and switch to edit mode
-            startTimer();
-            setMode('edit');
-        } catch (error) {
-            console.error('Failed to start recording:', error);
-            setError('録音の開始に失敗しました。ページを更新してもう一度お試しください。');
-        }
-    };
+        initializeRecording();
+    }, []);
 
     const startRecordingAndWaitForConnection = async () => {
         try {
@@ -595,7 +588,7 @@ function ThinkAloudPage() {
             const experimentData: ThinkAloudExperimentResult = {
                 userId: userId || 0, // 1-100の範囲のuserId
                 experimentType: 'think-aloud',
-                productId: 'product1', // 現在はproduct1固定
+                mailId: 'mail1', // 現在はmail1固定
                 originalText,
                 finalText: textContent,
                 startTime: getStartTimeISO() || new Date().toISOString(),
@@ -629,87 +622,81 @@ function ThinkAloudPage() {
 
     return (
         <div className="app-container">
-            {mode === 'upload' ? (
-                <ProductImageUploadPhase onComplete={handleUploadComplete} isPractice={isPractice} pageType={ExperimentPageType.ThinkAloud} />
-            ) : (
-                <div className="product-layout">
-                    <div className="product-image-container">
-                        {imagePreview && (
-                            <img src={imagePreview} alt="商品画像" className="product-image" />
+            <div className="mail-layout">
+                <div className="mail-header">
+                    <p className="target-mail">件名：{currentMail.subject}</p>
+                </div>
+                <div className="mail-content-container">
+                    <div className="text-header">
+                        <h3 className="mail-content-header">メール本文（タップで削除行も表示）</h3>
+                    </div>
+                    <div
+                        ref={descriptionDisplayRef}
+                        className={`text-editor ${isRecording ? 'recording' : ''} cursor-pointer select-none`}
+                        onMouseDown={() => setIsDescriptionClicked(true)}
+                        onMouseUp={() => setIsDescriptionClicked(false)}
+                        onMouseLeave={() => setIsDescriptionClicked(false)}
+                        style={{ minHeight: '240px', whiteSpace: 'pre-line', wordWrap: 'break-word' }}
+                    >
+                        {textContent ? (
+                            modificationHistory.length > 0 ? (
+                                <div>
+                                    {calculateLineDiff(getPreviousText() || '', textContent)
+                                        .filter(line => isDescriptionClicked || line.type !== 'removed')
+                                        .map((line, index) => (
+                                        <div
+                                            key={index}
+                                            className={`${
+                                                line.type === 'added'
+                                                    ? 'bg-yellow-100'
+                                                    : line.type === 'removed'
+                                                    ? 'bg-red-100'
+                                                    : 'bg-white'
+                                            } ${line.content.trim() === '' ? 'min-h-[1em]' : ''}`}
+                                        >
+                                            {line.content || '\u00A0'}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div>{textContent}</div>
+                            )
+                        ) : (
+                            <span style={{ color: '#888' }}>メール本文を音声で編集してください...</span>
                         )}
                     </div>
-                    <div className="product-description-container">
-                        <div className="text-header">
-                            <h3 className="product-description-header">商品説明（タップで削除行も表示）</h3>
-                        </div>
-                        <div
-                            ref={descriptionDisplayRef}
-                            className={`text-editor ${isRecording ? 'recording' : ''} cursor-pointer select-none`}
-                            onMouseDown={() => setIsDescriptionClicked(true)}
-                            onMouseUp={() => setIsDescriptionClicked(false)}
-                            onMouseLeave={() => setIsDescriptionClicked(false)}
-                            style={{ minHeight: '240px', whiteSpace: 'pre-line', wordWrap: 'break-word' }}
-                        >
-                            {textContent ? (
-                                modificationHistory.length > 0 ? (
-                                    <div>
-                                        {calculateLineDiff(getPreviousText() || '', textContent)
-                                            .filter(line => isDescriptionClicked || line.type !== 'removed')
-                                            .map((line, index) => (
-                                            <div
-                                                key={index}
-                                                className={`${
-                                                    line.type === 'added'
-                                                        ? 'bg-yellow-100'
-                                                        : line.type === 'removed'
-                                                        ? 'bg-red-100'
-                                                        : 'bg-white'
-                                                } ${line.content.trim() === '' ? 'min-h-[1em]' : ''}`}
-                                            >
-                                                {line.content || '\u00A0'}
-                                            </div>
-                                        ))}
-                                    </div>
+                    <div className="controls">
+                        <div className="transcription-display">
+                            <div className="transcription-header">
+                                {isProcessing ? '⚙️ テキスト修正中...' : '🎙️ 音声認識中'}
+                                {utteranceBuffer.length > 0 && !isProcessing && (
+                                    <span className="buffer-status">
+                                        （バッファ: {utteranceBuffer.length}件）
+                                    </span>
+                                )}
+                            </div>
+                            <div className="transcript-items">
+                                {transcriptItems.length === 0 ? (
+                                    <span className="no-transcript">
+                                        まだ音声が認識されていません
+                                    </span>
                                 ) : (
-                                    <div>{textContent}</div>
-                                )
-                            ) : (
-                                <span style={{ color: '#888' }}>商品説明を編集してください...</span>
-                            )}
-                        </div>
-                            <div className="controls">
-                                <div className="transcription-display">
-                                    <div className="transcription-header">
-                                        {isProcessing ? '⚙️ テキスト修正中...' : '🎙️ 音声認識中'}
-                                        {utteranceBuffer.length > 0 && !isProcessing && (
-                                            <span className="buffer-status">
-                                                （バッファ: {utteranceBuffer.length}件）
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="transcript-items">
-                                        {transcriptItems.length === 0 ? (
-                                            <span className="no-transcript">
-                                                まだ音声が認識されていません
-                                            </span>
-                                        ) : (
-                                            <span className="transcript-text">
-                                                {transcriptItems.map((item) => item.text).join('')}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                <button
-                                    className="complete-button-full"
-                                    onClick={handleComplete}
-                                    disabled={isProcessing || modificationHistory.length === 0}
-                                >
-                                    完了
-                                </button>
+                                    <span className="transcript-text">
+                                        {transcriptItems.map((item) => item.text).join('')}
+                                    </span>
+                                )}
                             </div>
                         </div>
+                        <button
+                            className="complete-button-full"
+                            onClick={handleComplete}
+                            disabled={isProcessing || modificationHistory.length === 0}
+                        >
+                            完了
+                        </button>
                     </div>
-                )}
+                </div>
+            </div>
 
             {error && <div className="error">{error}</div>}
         </div>

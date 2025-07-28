@@ -1,37 +1,37 @@
-import { product1, product2, practiceData, Product } from './products';
+import { mail1, mail2, practiceData, Mail } from './mail';
 
 export enum ExperimentPageType {
   ManualEdit = 'manual-edit',
   ThinkAloud = 'think-aloud'
 }
 
-export function getProductForExperiment(userId: number | null, pageType: ExperimentPageType, isPractice: boolean = false): Product {
-  // Practice mode always uses pencil
+export function getMailForExperiment(userId: number | null, pageType: ExperimentPageType, isPractice: boolean = false): Mail {
+  // Practice mode always uses training material
   if (isPractice) {
     return practiceData;
   }
 
-  // If no userId, default to product1 (ferret)
+  // If no userId, default to mail1 (meeting schedule change)
   if (!userId) {
-    return product1;
+    return mail1;
   }
 
   const remainder = userId % 4;
 
   if (pageType === ExperimentPageType.ManualEdit) {
     if (remainder === 0 || remainder === 3) {
-      return product1; // フェレット
+      return mail1; // 会議の日程変更
     } else { // remainder === 1 || remainder === 2
-      return product2; // ペンギン
+      return mail2; // 新商品発表会
     }
   } else if (pageType === ExperimentPageType.ThinkAloud) {
     if (remainder === 0 || remainder === 3) {
-      return product2; // ペンギン
+      return mail2; // 新商品発表会
     } else { // remainder === 1 || remainder === 2
-      return product1; // フェレット
+      return mail1; // 会議の日程変更
     }
   }
 
-  // Fallback to product1
-  return product1;
+  // Fallback to mail1
+  return mail1;
 }

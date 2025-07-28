@@ -2,12 +2,11 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import ProductImageUploadPhase from '../components/ProductImageUploadPhase';
+import { getMailForExperiment, ExperimentPageType } from '../../lib/experimentUtils';
 import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
 import { ManualExperimentResult } from '../../lib/types';
-import { ExperimentPageType } from '../../lib/experimentUtils';
 
 
 // =========== ManualEditPage Component ===========
@@ -18,23 +17,13 @@ function ManualEditPage() {
     const { stopTimer, getStartTimeISO, getEndTimeISO, getDurationSeconds } = useTimer();
     const { userId } = useAuth();
     
-    const [mode, setMode] = useState<'upload' | 'edit'>('upload');
+    // Get the mail data for this user
+    const currentMail = getMailForExperiment(userId, ExperimentPageType.ManualEdit, isPractice);
     
-    // Application state
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    
-    // Text editing state
-    const [textContent, setTextContent] = useState('');
-    const [originalText, setOriginalText] = useState('');
+    // Text editing state - initialize with mail text
+    const [textContent, setTextContent] = useState(currentMail.text);
+    const [originalText, setOriginalText] = useState(currentMail.text);
     const [hasEdited, setHasEdited] = useState(false);
-
-
-    const handleUploadComplete = async (imageFile: File, imagePreview: string, generatedText: string) => {
-        setImagePreview(imagePreview);
-        setTextContent(generatedText);
-        setOriginalText(generatedText); // 元のテキストとして保存
-        setMode('edit');
-    };
 
     const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newValue = event.target.value;
@@ -55,7 +44,7 @@ function ManualEditPage() {
             const experimentData: ManualExperimentResult = {
                 userId: userId || 0, // 1-100の範囲のuserId
                 experimentType: 'manual',
-                productId: 'product1', // 現在はproduct1固定
+                mailId: 'mail1', // 現在はmail1固定
                 originalText,
                 finalText: textContent,
                 startTime: getStartTimeISO() || new Date().toISOString(),
@@ -83,38 +72,33 @@ function ManualEditPage() {
 
     return (
         <div className="app-container">
-            {mode === 'upload' ? (
-                <ProductImageUploadPhase onComplete={handleUploadComplete} isPractice={isPractice} pageType={ExperimentPageType.ManualEdit} />
-            ) : (
-                <div className="product-layout">
-                    <div className="product-image-container">
-                        {imagePreview && (
-                            <img src={imagePreview} alt="商品画像" className="product-image" />
-                        )}
+            <div className="mail-layout">
+                <div className="mail-header">
+                    <h2>メールの編集</h2>
+                    <p className="target-mail">件名：{currentMail.subject}</p>
+                </div>
+                <div className="mail-content-container">
+                    <div className="text-header">
+                        <h3 className="mail-content-header">メール本文</h3>
                     </div>
-                    <div className="product-description-container">
-                        <div className="text-header">
-                            <h3 className="product-description-header">商品説明</h3>
-                        </div>
-                            <textarea
-                                className="text-editor"
-                                value={textContent}
-                                onChange={handleTextChange}
-                                placeholder="商品説明を編集してください..."
-                                rows={10}
-                            />
-                            <div className="controls">
-                                <button
-                                    className="complete-button-full"
-                                    onClick={handleComplete}
-                                    disabled={!hasEdited}
-                                >
-                                    完了
-                                </button>
-                            </div>
-                        </div>
+                    <textarea
+                        className="text-editor"
+                        value={textContent}
+                        onChange={handleTextChange}
+                        placeholder="メール本文を編集してください..."
+                        rows={15}
+                    />
+                    <div className="controls">
+                        <button
+                            className="complete-button-full"
+                            onClick={handleComplete}
+                            disabled={!hasEdited}
+                        >
+                            完了
+                        </button>
                     </div>
-                )}
+                </div>
+            </div>
         </div>
     );
 }
