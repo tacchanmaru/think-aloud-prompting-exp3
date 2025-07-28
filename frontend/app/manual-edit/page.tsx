@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getMailForExperiment, ExperimentPageType } from '../../lib/experimentUtils';
+import { getMailForExperiment, ExperimentPageType, generateReceivedMail, generateInitialReply, combineReplyAndReceived } from '../../lib/experimentUtils';
 import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
 import { ManualExperimentResult } from '../../lib/types';
+import ReceivedMailBlock from '../components/ReceivedMailBlock';
 
 
 // =========== ManualEditPage Component ===========
@@ -20,17 +21,31 @@ function ManualEditPage() {
     // Get the mail data for this user
     const currentMail = getMailForExperiment(userId, ExperimentPageType.ManualEdit, isPractice);
     
-    // Text editing state - initialize with mail text
-    const [textContent, setTextContent] = useState(currentMail.text);
-    const [originalText, setOriginalText] = useState(currentMail.text);
+    // Separate reply and received mail management
+    const [reply, setReply] = useState('');
+    const receivedMail = generateReceivedMail(currentMail);
     const [hasEdited, setHasEdited] = useState(false);
+    
+    // Combined text for saving
+    const combinedText = combineReplyAndReceived(reply, receivedMail);
+    const originalText = combineReplyAndReceived('', receivedMail);
+    
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Focus on the first line when component mounts
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.focus();
+            textareaRef.current.setSelectionRange(0, 0);
+        }
+    }, []);
 
     const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newValue = event.target.value;
-        setTextContent(newValue);
+        setReply(newValue);
         
         // Check if text has been edited
-        if (newValue !== originalText && !hasEdited) {
+        if (newValue !== '' && !hasEdited) {
             setHasEdited(true);
         }
     };
@@ -46,7 +61,7 @@ function ManualEditPage() {
                 experimentType: 'manual',
                 mailId: 'mail1', // 現在はmail1固定
                 originalText,
-                finalText: textContent,
+                finalText: combinedText,
                 startTime: getStartTimeISO() || new Date().toISOString(),
                 endTime: getEndTimeISO(),
                 durationSeconds: getDurationSeconds(),
@@ -73,21 +88,21 @@ function ManualEditPage() {
     return (
         <div className="app-container">
             <div className="mail-layout">
-                <div className="mail-header">
-                    <h2>メールの編集</h2>
-                    <p className="target-mail">件名：{currentMail.subject}</p>
-                </div>
                 <div className="mail-content-container">
-                    <div className="text-header">
-                        <h3 className="mail-content-header">メール本文</h3>
+                    <div className="mail-header">
+                        <p className="target-mail">件名：Re: {currentMail.subject}</p>
                     </div>
                     <textarea
+                        ref={textareaRef}
                         className="text-editor"
-                        value={textContent}
+                        value={reply}
                         onChange={handleTextChange}
-                        placeholder="メール本文を編集してください..."
-                        rows={15}
+                        placeholder="返信内容を入力してください..."
+                        rows={10}
                     />
+                    
+                    <ReceivedMailBlock receivedMail={receivedMail} />
+                    
                     <div className="controls">
                         <button
                             className="complete-button-full"

@@ -483,13 +483,13 @@ body {
     color: #212529;
     border: 1px solid #dee2e6;
     border-radius: 8px;
-    padding: 14px;
-    font-size: 14px;
+    padding: 12px;
+    font-size: 12px;
     line-height: 1.6;
     transition: border-color 0.2s ease;
     white-space: pre-wrap;
     width: 100%;
-    margin: 20px 10px;
+    margin: 16px 0;
     box-sizing: border-box;
 }
 
@@ -1900,4 +1900,34 @@ body {
 
 .min-h-[1em] {
     min-height: 1em;
+}
+
+/* Mail Layout Styles */
+.mail-content-container {
+    padding: 16px 16px 0 16px;
+}
+
+.target-mail {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+}
+
+/* Received Mail Block Styles */
+.received-mail-block {
+    margin: 16px 0;
+    padding-left: 8px;
+    border-left: 2px solid #6c757d;
+    background-color: transparent;
+}
+
+.received-mail-text {
+    margin: 0;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    color: #6c757d;
+    background: transparent;
+    border: none;
 }

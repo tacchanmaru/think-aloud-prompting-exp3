@@ -6,7 +6,8 @@ import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
 import { ThinkAloudExperimentResult, IntermediateStep } from '../../lib/types';
-import { getMailForExperiment, ExperimentPageType } from '../../lib/experimentUtils';
+import { getMailForExperiment, ExperimentPageType, generateReplyTemplate, generateReceivedMail, generateInitialReply, combineReplyAndReceived } from '../../lib/experimentUtils';
+import ReceivedMailBlock from '../components/ReceivedMailBlock';
 
 
 // =========== ThinkAloudPage Component ===========
@@ -20,8 +21,15 @@ function ThinkAloudPage() {
     // Get the mail data for this user
     const currentMail = getMailForExperiment(userId, ExperimentPageType.ThinkAloud, isPractice);
     
-    // Text editing state - initialize with mail text
-    const [textContent, setTextContent] = useState(currentMail.text);
+    // Generate reply template with quoted original message
+    const replyTemplate = generateReplyTemplate(currentMail);
+    
+    // Separate reply and received mail management (for future use)
+    const [reply, setReply] = useState(generateInitialReply());
+    const [receivedMail, setReceivedMail] = useState(generateReceivedMail(currentMail));
+    
+    // Text editing state - initialize empty for reply
+    const [textContent, setTextContent] = useState('');
     const [modificationHistory, setModificationHistory] = useState<{
         utterance: string;
         editPlan: string;
@@ -29,7 +37,7 @@ function ThinkAloudPage() {
         modifiedText: string;
     }[]>([]);
     const [historySummary, setHistorySummary] = useState('');
-    const [originalText, setOriginalText] = useState(currentMail.text);
+    const [originalText, setOriginalText] = useState('');
     
     // Audio recording state
     const [isRecording, setIsRecording] = useState(false);
@@ -623,12 +631,9 @@ function ThinkAloudPage() {
     return (
         <div className="app-container">
             <div className="mail-layout">
-                <div className="mail-header">
-                    <p className="target-mail">件名：{currentMail.subject}</p>
-                </div>
                 <div className="mail-content-container">
-                    <div className="text-header">
-                        <h3 className="mail-content-header">メール本文（タップで削除行も表示）</h3>
+                    <div className="mail-header">
+                        <p className="target-mail">件名：Re: {currentMail.subject}</p>
                     </div>
                     <div
                         ref={descriptionDisplayRef}
@@ -662,9 +667,12 @@ function ThinkAloudPage() {
                                 <div>{textContent}</div>
                             )
                         ) : (
-                            <span style={{ color: '#888' }}>メール本文を音声で編集してください...</span>
+                            <span style={{ color: '#888' }}>返信内容を音声で作成してください...</span>
                         )}
                     </div>
+                    
+                    <ReceivedMailBlock receivedMail={receivedMail} />
+                    
                     <div className="controls">
                         <div className="transcription-display">
                             <div className="transcription-header">
