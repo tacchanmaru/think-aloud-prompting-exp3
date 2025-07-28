@@ -38,9 +38,9 @@ export async function POST(request: NextRequest) {
         const experimentData: ExperimentResult = await request.json();
         
         // 必須フィールドのバリデーション
-        if (experimentData.userId == null || !experimentData.experimentType || !experimentData.productId) {
+        if (experimentData.userId == null || !experimentData.experimentType || !experimentData.mailId) {
             return NextResponse.json(
-                { error: 'Missing required fields: userId, experimentType, or productId' },
+                { error: 'Missing required fields: userId, experimentType, or mailId' },
                 { status: 400 }
             );
         }
