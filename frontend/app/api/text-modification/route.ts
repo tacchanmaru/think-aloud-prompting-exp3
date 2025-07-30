@@ -33,7 +33,8 @@ function createGPTPrompt(
     numberedText: string, 
     utterance: string, 
     historySummary: string,
-    history: TextModificationHistory[]
+    history: TextModificationHistory[],
+    imageBase64?: string
 ): any[] {
     const historyContext = historySummary ? `\n\n現在の編集における制約条件:\n${historySummary}` : '';
     
@@ -144,7 +145,13 @@ addは行番号の次に追加します。
                 { type: 'text', text: `元の商品説明文: ${numberedText}` },
                 { type: 'text', text: `ユーザーの発話: ${utterance}` },
                 { type: 'text', text: `制約条件: ${historyContext}` },
-                ...(historyText ? [{ type: 'text', text: historyText }] : [])
+                ...(historyText ? [{ type: 'text', text: historyText }] : []),
+                ...(imageBase64 ? [{
+                    type: 'image_url',
+                    image_url: {
+                        url: `data:image/jpeg;base64,${imageBase64}`
+                    }
+                }] : [])
             ]
         }
     ];
@@ -213,18 +220,7 @@ export async function POST(request: NextRequest) {
         const numberedText = addLineNumbers(text);
 
         // Create GPT prompt
-        const messages = createGPTPrompt(numberedText, utterance, historySummary, history);
-
-        // Add image if provided
-        if (imageBase64) {
-            const userMessage = messages[1] as any;
-            userMessage.content.push({
-                type: 'image_url',
-                image_url: {
-                    url: `data:image/jpeg;base64,${imageBase64}`
-                }
-            });
-        }
+        const messages = createGPTPrompt(numberedText, utterance, historySummary, history, imageBase64);
 
         // Call OpenAI API
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
