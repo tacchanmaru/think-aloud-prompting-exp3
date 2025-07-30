@@ -489,6 +489,8 @@ body {
     transition: border-color 0.2s ease;
     white-space: pre-wrap;
     margin-bottom: 20px;
+    min-height: calc(14px * 1.6 * 5); /* 最小5行の高さ */
+    resize: vertical;
 }
 
 

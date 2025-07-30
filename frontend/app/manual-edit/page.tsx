@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductImageUploadPhase from '../components/ProductImageUploadPhase';
 import { useTimer } from '../contexts/TimerContext';
@@ -27,7 +27,21 @@ function ManualEditPage() {
     const [textContent, setTextContent] = useState('');
     const [originalText, setOriginalText] = useState('');
     const [hasEdited, setHasEdited] = useState(false);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+    // Auto-resize textarea based on content
+    const adjustTextareaHeight = () => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            const minHeight = 96; // calc(12px * 1.6 * 5) ≈ 96px
+            textareaRef.current.style.height = Math.max(textareaRef.current.scrollHeight, minHeight) + 'px';
+        }
+    };
+
+    // Adjust height whenever textContent changes
+    useEffect(() => {
+        adjustTextareaHeight();
+    }, [textContent]);
 
     const handleUploadComplete = async (imageFile: File, imagePreview: string, generatedText: string) => {
         setImagePreview(imagePreview);
@@ -97,11 +111,19 @@ function ManualEditPage() {
                             <h3 className="product-description-header">商品説明</h3>
                         </div>
                             <textarea
+                                ref={textareaRef}
                                 className="text-editor"
                                 value={textContent}
                                 onChange={handleTextChange}
                                 placeholder="商品説明を編集してください..."
-                                rows={10}
+                                style={{ 
+                                    minHeight: 'calc(12px * 1.6 * 5)',
+                                    resize: 'vertical',
+                                    whiteSpace: 'pre-line',
+                                    wordWrap: 'break-word',
+                                    boxSizing: 'border-box'
+                                }}
+                                onInput={adjustTextareaHeight}
                             />
                             <div className="controls">
                                 <button

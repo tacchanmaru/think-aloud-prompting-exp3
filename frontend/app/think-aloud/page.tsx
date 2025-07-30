@@ -648,7 +648,11 @@ function ThinkAloudPage() {
                             onMouseDown={() => setIsDescriptionClicked(true)}
                             onMouseUp={() => setIsDescriptionClicked(false)}
                             onMouseLeave={() => setIsDescriptionClicked(false)}
-                            style={{ minHeight: '240px', whiteSpace: 'pre-line', wordWrap: 'break-word' }}
+                            style={{ 
+                                minHeight: 'calc(12px * 1.6 * 5)', // manual-editと同じ最小5行の高さ
+                                whiteSpace: 'pre-line', 
+                                wordWrap: 'break-word' 
+                            }}
                         >
                             {textContent ? (
                                 modificationHistory.length > 0 ? (
