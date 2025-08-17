@@ -1901,3 +1901,62 @@ body {
 .min-h-[1em] {
     min-height: 1em;
 }
+
+/* Text prompting specific styles */
+.prompt-input-container {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+
+.prompt-input {
+    flex: 1;
+    background-color: #ffffff;
+    color: #212529;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+    resize: vertical;
+    min-height: calc(14px * 1.4 * 3);
+    max-height: calc(14px * 1.4 * 6);
+    transition: border-color 0.2s ease;
+}
+
+.prompt-input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.prompt-input:disabled {
+    background-color: #f8f9fa;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.send-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+    min-height: 44px;
+}
+
+.send-button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.send-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+

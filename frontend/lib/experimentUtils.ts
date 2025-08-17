@@ -2,7 +2,8 @@ import { product1, product2, practiceData, Product } from './products';
 
 export enum ExperimentPageType {
   ManualEdit = 'manual-edit',
-  ThinkAloud = 'think-aloud'
+  ThinkAloud = 'think-aloud',
+  TextPrompting = 'text-prompting'
 }
 
 export function getProductForExperiment(userId: number | null, pageType: ExperimentPageType, isPractice: boolean = false): Product {
@@ -25,6 +26,12 @@ export function getProductForExperiment(userId: number | null, pageType: Experim
       return product2; // ペンギン
     }
   } else if (pageType === ExperimentPageType.ThinkAloud) {
+    if (remainder === 0 || remainder === 3) {
+      return product2; // ペンギン
+    } else { // remainder === 1 || remainder === 2
+      return product1; // フェレット
+    }
+  } else if (pageType === ExperimentPageType.TextPrompting) {
     if (remainder === 0 || remainder === 3) {
       return product2; // ペンギン
     } else { // remainder === 1 || remainder === 2

@@ -187,10 +187,17 @@ function HomePage() {
                             </button>
                             <button 
                                 className={`menu-button practice ${!userId ? 'disabled' : ''}`}
+                                onClick={() => userId && router.push("/text-prompting?practice=true")}
+                                disabled={!userId}
+                            >
+                                テキストAI（練習用）
+                            </button>
+                            <button 
+                                className={`menu-button practice ${!userId ? 'disabled' : ''}`}
                                 onClick={() => userId && router.push("/think-aloud?practice=true")}
                                 disabled={!userId}
                             >
-                                思考発話（練習用）
+                                思考発話AI（練習用）
                             </button>
                         </div>
                         
@@ -207,10 +214,17 @@ function HomePage() {
                             </button>
                             <button 
                                 className={`menu-button ${!userId ? 'disabled' : ''}`}
+                                onClick={() => userId && router.push("/text-prompting")}
+                                disabled={!userId}
+                            >
+                                テキストAI
+                            </button>
+                            <button 
+                                className={`menu-button ${!userId ? 'disabled' : ''}`}
                                 onClick={() => userId && router.push("/think-aloud")}
                                 disabled={!userId}
                             >
-                                思考発話
+                                思考発話AI
                             </button>
                         </div>
                     </div>

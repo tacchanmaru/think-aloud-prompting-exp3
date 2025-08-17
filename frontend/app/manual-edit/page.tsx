@@ -131,7 +131,7 @@ function ManualEditPage() {
                                     onClick={handleComplete}
                                     disabled={!hasEdited}
                                 >
-                                    完了
+                                    編集完了
                                 </button>
                             </div>
                         </div>

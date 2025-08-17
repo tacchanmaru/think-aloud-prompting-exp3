@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
+const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
@@ -14,44 +14,47 @@ interface TextModificationHistory {
 
 export async function POST(request: NextRequest) {
   try {
-    const { history }: { history: TextModificationHistory[] } = await request.json();
+    const { history, currentSummary = '' }: { history: TextModificationHistory[]; currentSummary?: string } = await request.json();
 
     if (!history || history.length === 0) {
       return NextResponse.json({ historySummary: '' });
     }
 
     // archiveのhistory_summarizerの実装に基づいたシステムプロンプト
-    const systemPrompt = `あなたはユーザーの文章編集履歴を分析し、ユーザー固有の書き方の好みや特徴を抽出する専門家です。
+    const systemPrompt = `あなたはユーザーの編集履歴を分析し、編集の傾向を記録する専門家です。
 
-以下の編集履歴を分析し、このユーザーの文章作成における個人的な好みや特徴を抽出してください：
+以下の編集履歴から、ユーザーの編集傾向を抽出してください：
 
-# 分析観点
-- ユーザーの発言から読み取れる個人的な好み
-- 好む表現スタイルや文章パターン
-- 重視する情報の種類や詳細度
-- 避けたい表現や要素
-- 文章構成や体裁の好み
-- 最近のフィードバックをより重視する
+# 記録のルール
+1. ユーザーの実際の入力を「」で引用しながら、その意図を簡潔に解釈する
+2. 強すぎる一般化は避け、具体的な文脈を含める
+3. 最新の指示をより重視する
+4. 矛盾する指示がある場合は、その変化も記録する
 
 # 出力形式
-ユーザーの特徴を3-5個の簡潔な要点として出力してください。
-一般的な文章作成のルールではなく、このユーザー特有の特徴に焦点を当ててください。`;
+最大3-5個の箇条書きで、以下のような形式：
+- 「デスマス調をやめて」など 親しみやすい表現を好む
+- 「購入場所は箇条書きで」「状態についても」など、詳細情報は箇条書きでの整理を好む
+- 「文章詰まってるから直して」のように適度な改行で読みやすさを重視する
+
+各項目は30-40文字程度以内で簡潔に。`;
 
     // 履歴をテキスト形式に変換
     const historyText = history.map((item, index) => `
 ## 編集 ${index + 1}
-**ユーザー発言**: ${item.utterance}
+**ユーザー入力**: ${item.utterance}
 **編集計画**: ${item.editPlan}
 **元テキスト**: ${item.originalText}
 **修正後テキスト**: ${item.modifiedText}
 `).join('\n');
 
-    const userPrompt = `編集履歴:
+    const userPrompt = `${currentSummary ? `現在の編集傾向の記録:\n${currentSummary}\n\n` : ''}編集履歴:
 ${historyText}
 
-上記の編集履歴から、このユーザーの文章作成における個人的な好みや特徴を抽出してください。`;
+上記の履歴から、ユーザーが実際に行った編集指示とその傾向を記録してください。ユーザーの入力内容を「」で引用しながら、簡潔に解釈を加えてください。
+${currentSummary ? '既存の記録に新しい傾向を追加したり、矛盾する場合は更新してください。' : ''}`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await client.chat.completions.create({
       model: 'gpt-4.1-mini',
       messages: [
         { role: 'system', content: systemPrompt },

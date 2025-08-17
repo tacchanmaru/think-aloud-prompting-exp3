@@ -6,7 +6,7 @@ import ProductImageUploadPhase from '../components/ProductImageUploadPhase';
 import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
-import { ThinkAloudExperimentResult, IntermediateStep } from '../../lib/types';
+import { ThinkAloudExperimentResult } from '../../lib/types';
 import { ExperimentPageType } from '../../lib/experimentUtils';
 
 
@@ -30,6 +30,8 @@ function ThinkAloudPage() {
         editPlan: string;
         originalText: string;
         modifiedText: string;
+        pastUtterances: string;
+        historySummary: string;
     }[]>([]);
     const [historySummary, setHistorySummary] = useState('');
     const [originalText, setOriginalText] = useState('');
@@ -45,6 +47,7 @@ function ThinkAloudPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const lastCompleteTimeRef = useRef<number>(Date.now());
     const [isDescriptionClicked, setIsDescriptionClicked] = useState(false);
+    const [pastUtterances, setPastUtterances] = useState<string>('');  // 過去の発話を「、」で区切って保存
     
     const websocketRef = useRef<WebSocket | null>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
@@ -70,6 +73,7 @@ function ThinkAloudPage() {
                 body: JSON.stringify({
                     text: textContent,
                     utterance: utterance,
+                    pastUtterances: pastUtterances,
                     imageBase64: imagePreview ? imagePreview.split(',')[1] : undefined,
                     history: modificationHistory,
                     historySummary: historySummary
@@ -99,6 +103,8 @@ function ThinkAloudPage() {
                     editPlan: result.plan || '',
                     originalText: previousText,
                     modifiedText: result.modifiedText,
+                    pastUtterances: pastUtterances,
+                    historySummary: historySummary,
                 };
                 
                 const updatedHistory = [...modificationHistory, newHistoryItem];
@@ -116,7 +122,7 @@ function ThinkAloudPage() {
             console.error('Error in text modification:', error);
             throw error; // Re-throw to be handled by caller
         }
-    }, [textContent, imagePreview, modificationHistory, historySummary]);
+    }, [textContent, imagePreview, modificationHistory, historySummary, pastUtterances]);
 
     const updateHistorySummary = useCallback(async (history: typeof modificationHistory) => {
         // history summaryの更新は編集履歴が2つ以上の場合のみ実行
@@ -138,7 +144,8 @@ function ThinkAloudPage() {
                         editPlan: item.editPlan,
                         originalText: item.originalText,
                         modifiedText: item.modifiedText,
-                    }))
+                    })),
+                    currentSummary: historySummary
                 }),
             });
 
@@ -191,6 +198,15 @@ function ThinkAloudPage() {
             console.log('Processing buffered utterances:', utterancesToProcess);
             
             await processTextModification(combinedUtterance);
+            
+            // Add current utterance to past utterances
+            setPastUtterances(prev => {
+                if (prev) {
+                    return prev + '、' + combinedUtterance;
+                } else {
+                    return combinedUtterance;
+                }
+            });
             
             // Clear only the transcript items that were processed
             setTranscriptItems(prev => prev.filter(item => 
@@ -328,14 +344,6 @@ function ThinkAloudPage() {
             console.error('Microphone permission denied:', error);
             setError('マイクの許可が必要です。ブラウザの設定を確認してください。');
             throw error;
-        }
-    };
-
-    const handleRecordClick = () => {
-        if (isRecording) {
-            stopRecording();
-        } else {
-            startRecording();
         }
     };
 
@@ -603,9 +611,10 @@ function ThinkAloudPage() {
                 durationSeconds: getDurationSeconds(),
                 intermediateSteps: modificationHistory.map(item => ({
                     utterance: item.utterance,
+                    past_utterances: item.pastUtterances,
                     edit_plan: item.editPlan,
                     modified_text: item.modifiedText,
-                    history_summary: historySummary
+                    history_summary: item.historySummary
                 })),
                 isPracticeMode: isPractice,
             };
@@ -644,10 +653,9 @@ function ThinkAloudPage() {
                         </div>
                         <div
                             ref={descriptionDisplayRef}
-                            className={`text-editor ${isRecording ? 'recording' : ''} cursor-pointer select-none`}
-                            onMouseDown={() => setIsDescriptionClicked(true)}
-                            onMouseUp={() => setIsDescriptionClicked(false)}
-                            onMouseLeave={() => setIsDescriptionClicked(false)}
+                            className="text-editor cursor-pointer select-none"
+                            onTouchStart={() => setIsDescriptionClicked(true)}
+                            onTouchEnd={() => setIsDescriptionClicked(false)}
                             style={{ 
                                 minHeight: 'calc(12px * 1.6 * 5)', // manual-editと同じ最小5行の高さ
                                 whiteSpace: 'pre-line', 
@@ -685,11 +693,6 @@ function ThinkAloudPage() {
                                 <div className="transcription-display">
                                     <div className="transcription-header">
                                         {isProcessing ? '⚙️ テキスト修正中...' : '🎙️ 音声認識中'}
-                                        {utteranceBuffer.length > 0 && !isProcessing && (
-                                            <span className="buffer-status">
-                                                （バッファ: {utteranceBuffer.length}件）
-                                            </span>
-                                        )}
                                     </div>
                                     <div className="transcript-items">
                                         {transcriptItems.length === 0 ? (
@@ -708,7 +711,7 @@ function ThinkAloudPage() {
                                     onClick={handleComplete}
                                     disabled={isProcessing || modificationHistory.length === 0}
                                 >
-                                    完了
+                                    編集完了
                                 </button>
                             </div>
                         </div>
