@@ -4,9 +4,9 @@
     "display": "standalone",
     "scope": "/",
     "start_url": "/",
-    "name": "TA-Prompting for product description",
-    "short_name": "TA-Prompting for product description",
-    "description": "think-aloud-prompting for product description",
+    "name": "TA-Prompting for email modification",
+    "short_name": "TA-Prompting for email",
+    "description": "think-aloud-prompting for email modification",
     "icons": [
         {
             "src": "/icons/icon-192x192.png",
@@ -19,4 +19,4 @@
             "type": "image/png"
         }
     ]
-}
+}x
