@@ -37,8 +37,8 @@ export async function saveExperimentData(data: ExperimentResult): Promise<boolea
 }
 
 
-// 商品IDを決定する関数（archiveと同様の方式）
-export function getProductIdForUser(userId: string, experimentType: 'manual' | 'think-aloud'): string {
+// メールIDを決定する関数（archiveと同様の方式）
+export function getEmailIdForUser(userId: string, experimentType: 'manual' | 'think-aloud' | 'text-prompting'): string {
     // ユーザーIDから数値を生成
     const hashCode = userId.split('').reduce((a, b) => {
         a = ((a << 5) - a) + b.charCodeAt(0);
@@ -47,12 +47,13 @@ export function getProductIdForUser(userId: string, experimentType: 'manual' | '
     
     const userIndex = Math.abs(hashCode) % 4;
     
-    // Manual: product1, product2を使用
-    // Think-Aloud: product3, product4を使用（異なる商品でバランス化）
+    // Manual: email1, email2を使用
+    // Think-Aloud: email2, email1を使用（異なるメールでバランス化）
+    // Text-Prompting: email2, email1を使用
     if (experimentType === 'manual') {
-        return userIndex < 2 ? 'product1' : 'product2';
+        return userIndex < 2 ? 'email1' : 'email2';
     } else {
-        return userIndex < 2 ? 'product1' : 'product2'; // 現在はproduct1, product2のみ存在
+        return userIndex < 2 ? 'email2' : 'email1'; // Think-AloudとText-Promptingは逆にする
     }
 }
 

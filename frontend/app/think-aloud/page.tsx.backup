@@ -317,9 +317,19 @@ function TextPromptingPage() {
             ) : (
                 <div className="email-layout">
                     <div className="received-email-container">
-                        <div className="email-content">
-                            <div className="email-subject">件名: {emailData?.subject}</div>
-                            <div className="email-from">差出人: {emailData?.sender}</div>
+                        <div className="received-email-header">
+                            <h3>受信メール</h3>
+                        </div>
+                        <div className="received-email-content" style={{
+                            borderLeft: '4px solid #333',
+                            paddingLeft: '16px',
+                            backgroundColor: '#f8f8f8',
+                            padding: '16px',
+                            marginBottom: '24px',
+                            whiteSpace: 'pre-line'
+                        }}>
+                            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>件名: {emailData?.subject}</div>
+                            <div style={{ fontSize: '14px', color: '#666', marginBottom: '12px' }}>差出人: {emailData?.sender}</div>
                             <div>{emailData?.content}</div>
                         </div>
                     </div>

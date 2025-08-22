@@ -2,9 +2,10 @@
 export interface BaseExperimentData {
     userId: number;        // 1-100の範囲のユーザーID
     experimentType: 'manual' | 'think-aloud' | 'text-prompting';
-    productId: string;
-    originalText: string;
-    finalText: string;
+    emailId: string;
+    originalEmail: string;
+    emailSubject: string;
+    replyText: string;
     startTime: string; // ISO形式
     endTime: string;   // ISO形式
     durationSeconds: number;

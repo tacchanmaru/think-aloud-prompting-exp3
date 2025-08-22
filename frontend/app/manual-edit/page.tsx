@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import ProductImageUploadPhase from '../components/ProductImageUploadPhase';
+import EmailDisplayPhase from '../components/EmailDisplayPhase';
 import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
 import { ManualExperimentResult } from '../../lib/types';
+import { getEmailForExperiment } from '../../lib/experimentUtils';
 import { ExperimentPageType } from '../../lib/experimentUtils';
 
 
@@ -18,14 +19,14 @@ function ManualEditPage() {
     const { stopTimer, getStartTimeISO, getEndTimeISO, getDurationSeconds } = useTimer();
     const { userId } = useAuth();
     
-    const [mode, setMode] = useState<'upload' | 'edit'>('upload');
+    const [mode, setMode] = useState<'display' | 'edit'>('display');
     
     // Application state
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [emailData, setEmailData] = useState<any>(null);
     
     // Text editing state
-    const [textContent, setTextContent] = useState('');
-    const [originalText, setOriginalText] = useState('');
+    const [replyContent, setReplyContent] = useState('');
+    const [originalReply, setOriginalReply] = useState('');
     const [hasEdited, setHasEdited] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -38,24 +39,24 @@ function ManualEditPage() {
         }
     };
 
-    // Adjust height whenever textContent changes
+    // Adjust height whenever replyContent changes
     useEffect(() => {
         adjustTextareaHeight();
-    }, [textContent]);
+    }, [replyContent]);
 
-    const handleUploadComplete = async (imageFile: File, imagePreview: string, generatedText: string) => {
-        setImagePreview(imagePreview);
-        setTextContent(generatedText);
-        setOriginalText(generatedText); // 元のテキストとして保存
+    const handleEmailDisplayComplete = async (email: any, emailPreview: string, initialReplyText: string) => {
+        setEmailData(email);
+        setReplyContent(initialReplyText);
+        setOriginalReply(initialReplyText); // 元の返信文として保存
         setMode('edit');
     };
 
-    const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleReplyChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newValue = event.target.value;
-        setTextContent(newValue);
+        setReplyContent(newValue);
         
-        // Check if text has been edited
-        if (newValue !== originalText && !hasEdited) {
+        // Check if reply has been edited
+        if (newValue !== originalReply && !hasEdited) {
             setHasEdited(true);
         }
     };
@@ -66,12 +67,14 @@ function ManualEditPage() {
             stopTimer();
             
             // 実験データを準備
+            const currentEmail = getEmailForExperiment(userId, ExperimentPageType.ManualEdit, isPractice);
             const experimentData: ManualExperimentResult = {
                 userId: userId || 0, // 1-100の範囲のuserId
                 experimentType: 'manual',
-                productId: 'product1', // 現在はproduct1固定
-                originalText,
-                finalText: textContent,
+                emailId: emailData?.id || currentEmail.id,
+                originalEmail: currentEmail.content,
+                emailSubject: currentEmail.subject,
+                replyText: replyContent,
                 startTime: getStartTimeISO() || new Date().toISOString(),
                 endTime: getEndTimeISO(),
                 durationSeconds: getDurationSeconds(),
@@ -82,7 +85,7 @@ function ManualEditPage() {
             const saveSuccess = await saveExperimentData(experimentData);
             
             if (saveSuccess) {
-                alert('実験が完了しました。管理者にお知らせください。');
+                alert('メール返信実験が完了しました。管理者にお知らせください。');
             } else {
                 alert('実験は完了しましたが、データの保存に失敗しました。管理者にお知らせください。');
             }
@@ -97,45 +100,51 @@ function ManualEditPage() {
 
     return (
         <div className="app-container">
-            {mode === 'upload' ? (
-                <ProductImageUploadPhase onComplete={handleUploadComplete} isPractice={isPractice} pageType={ExperimentPageType.ManualEdit} />
+            {mode === 'display' ? (
+                <EmailDisplayPhase onComplete={handleEmailDisplayComplete} isPractice={isPractice} pageType={ExperimentPageType.ManualEdit} />
             ) : (
-                <div className="product-layout">
-                    <div className="product-image-container">
-                        {imagePreview && (
-                            <img src={imagePreview} alt="商品画像" className="product-image" />
-                        )}
+                <div className="email-layout">
+                    <div className="received-email-container">
+                        <div className="email-content">
+                            <div className="email-subject">件名: {emailData?.subject}</div>
+                            <div className="email-from">差出人: {emailData?.sender}</div>
+                            <div>{emailData?.content}</div>
+                        </div>
                     </div>
-                    <div className="product-description-container">
+                    <div className="reply-email-container">
                         <div className="text-header">
-                            <h3 className="product-description-header">商品説明</h3>
+                            <h3 className="reply-email-header">返信文</h3>
                         </div>
-                            <textarea
-                                ref={textareaRef}
-                                className="text-editor"
-                                value={textContent}
-                                onChange={handleTextChange}
-                                placeholder="商品説明を編集してください..."
-                                style={{ 
-                                    minHeight: 'calc(12px * 1.6 * 5)',
-                                    resize: 'vertical',
-                                    whiteSpace: 'pre-line',
-                                    wordWrap: 'break-word',
-                                    boxSizing: 'border-box'
-                                }}
-                                onInput={adjustTextareaHeight}
-                            />
-                            <div className="controls">
-                                <button
-                                    className="complete-button-full"
-                                    onClick={handleComplete}
-                                    disabled={!hasEdited}
-                                >
-                                    編集完了
-                                </button>
-                            </div>
+                        <textarea
+                            ref={textareaRef}
+                            className="text-editor"
+                            value={replyContent}
+                            onChange={handleReplyChange}
+                            placeholder="返信内容を入力してください..."
+                            style={{ 
+                                minHeight: 'calc(12px * 1.6 * 5)',
+                                resize: 'vertical',
+                                whiteSpace: 'pre-line',
+                                wordWrap: 'break-word',
+                                boxSizing: 'border-box',
+                                border: '1px solid #333',
+                                borderRadius: '4px',
+                                padding: '12px',
+                                width: '100%'
+                            }}
+                            onInput={adjustTextareaHeight}
+                        />
+                        <div className="controls">
+                            <button
+                                className="complete-button-full"
+                                onClick={handleComplete}
+                                disabled={!hasEdited}
+                            >
+                                返信
+                            </button>
                         </div>
                     </div>
+                </div>
                 )}
         </div>
     );
