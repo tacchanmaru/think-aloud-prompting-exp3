@@ -17,18 +17,20 @@ const AnswerArea = styled.div`
 `;
 
 interface LocalAnswer {
-  satisfaction: number;
-  guilt: number;
-  ownership: number;
-  honesty: number;
+  satisfaction: number | null;
+  guilt: number | null;
+  ownership: number | null;
+  honesty: number | null;
+  agency: number | null;
 }
 
 const ProductDescriptionQuestion = () => {
   const [localAnswer, setLocalAnswer] = useState<LocalAnswer>({
-    satisfaction: 0,
-    guilt: 0,
-    ownership: 0,
-    honesty: 0
+    satisfaction: null,
+    guilt: null,
+    ownership: null,
+    honesty: null,
+    agency: null
   });
 
   const [formAnswer, setFormAnswer] = useRecoilState(productDescriptionAnswerState);
@@ -36,10 +38,11 @@ const ProductDescriptionQuestion = () => {
   useEffect(() => {
     if (formAnswer) {
       setLocalAnswer({
-        satisfaction: formAnswer.satisfaction || 0,
-        guilt: formAnswer.guilt || 0,
-        ownership: formAnswer.ownership || 0,
-        honesty: formAnswer.honesty || 0
+        satisfaction: formAnswer.satisfaction || null,
+        guilt: formAnswer.guilt || null,
+        ownership: formAnswer.ownership || null,
+        honesty: formAnswer.honesty || null,
+        agency: formAnswer.agency || null
       });
     }
   }, []);
@@ -62,7 +65,7 @@ const ProductDescriptionQuestion = () => {
           {question}
         </Typography>
         <AnswerArea>
-          <div>まったくない</div>
+          <div>全く思わない</div>
           <div>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
               <Radio
@@ -75,7 +78,7 @@ const ProductDescriptionQuestion = () => {
               />
             ))}
           </div>
-          <div>極めてある</div>
+          <div>非常にそう思う</div>
         </AnswerArea>
       </Paper>
     );
@@ -88,10 +91,10 @@ const ProductDescriptionQuestion = () => {
           編集した商品説明文に関する評価
         </Typography>
         <Typography variant="body1" paragraph>
-          以下の質問に10段階で回答してください。1は「まったくない」、10は「極めてある」を意味します。
+          以下の質問に10段階で回答してください。1は「全く思わない」、10は「非常にそう思う」を意味します。
         </Typography>
       </Paper>
-
+      {renderScaleQuestion("この文章の編集時において、自分がどの程度主体的にコントロールしていると感じましたか", "agency")}
       {renderScaleQuestion("文章作成に対する満足度はどのくらいですか", "satisfaction")}
       {renderScaleQuestion("出品者として、AIを活用して書いたことに対する罪悪感がありますか", "guilt")}
       {renderScaleQuestion("どのぐらい自分の文章だと思いますか", "ownership")}
