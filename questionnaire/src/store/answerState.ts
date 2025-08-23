@@ -30,11 +30,11 @@ export interface AfterExpAnswerState {
 }
 
 export interface ProductDescriptionState {
-  satisfaction: number;
-  guilt: number;
-  ownership: number;
-  honesty: number;
-  freeText: string;
+  satisfaction: number | null;
+  guilt: number | null;
+  ownership: number | null;
+  honesty: number | null;
+  agency: number | null;
 }
 
 
