@@ -24,7 +24,7 @@ interface LocalAnswer {
   agency: number | null;
 }
 
-const ProductDescriptionQuestion = () => {
+const MailQuestion = () => {
   const [localAnswer, setLocalAnswer] = useState<LocalAnswer>({
     satisfaction: null,
     guilt: null,
@@ -88,7 +88,7 @@ const ProductDescriptionQuestion = () => {
     <>
       <Paper style={{ margin: "20px auto", padding: "20px", maxWidth: "800px" }}>
         <Typography variant="h5" gutterBottom>
-          編集した商品説明文に関する評価
+          編集したメールに関する評価
         </Typography>
         <Typography variant="body1" paragraph>
           以下の質問に10段階で回答してください。1は「全く思わない」、10は「非常にそう思う」を意味します。
@@ -96,11 +96,11 @@ const ProductDescriptionQuestion = () => {
       </Paper>
       {renderScaleQuestion("この文章の編集時において、自分がどの程度主体的にコントロールしていると感じましたか", "agency")}
       {renderScaleQuestion("文章作成に対する満足度はどのくらいですか", "satisfaction")}
-      {renderScaleQuestion("出品者として、AIを活用して書いたことに対する罪悪感がありますか", "guilt")}
+      {renderScaleQuestion("送信者として、AIを活用して書いたことに対する罪悪感がありますか", "guilt")}
       {renderScaleQuestion("どのぐらい自分の文章だと思いますか", "ownership")}
-      {renderScaleQuestion("完成した商品説明文は、どのぐらい正直に書いていると思いますか", "honesty")}
+      {renderScaleQuestion("完成したメールは、どのぐらい正直に書いていると思いますか", "honesty")}
     </>
   );
 };
 
-export default ProductDescriptionQuestion;
+export default MailQuestion;

@@ -14,7 +14,7 @@ import { db } from "./firebase";
 import { useNavigate } from "react-router-dom";
 import SUSQuestion from "./SUSQuestion";
 import NasaTLXQuestion from "./NasaTLXQuestion";
-import ProductDescriptionQuestion from "./ProductDescriptionQuestion";
+import MailQuestion from "./MailQuestion";
 import { nasa_tlx_list, sus_list } from "./constraints";
 import AdminConfirmation from "./AdminConfirmation";
 
@@ -73,11 +73,11 @@ function App() {
         alert(`質問紙${taskNum}（NASA-TLX）に回答してください。`);
         return;
       }
-    } else if (taskPage === 2) { // 商品説明文
+    } else if (taskPage === 2) { // メール
       if (!product_description_answer.satisfaction || !product_description_answer.guilt || 
           !product_description_answer.ownership || !product_description_answer.honesty ||
           !product_description_answer.agency) {
-        alert(`質問紙${taskNum}（商品説明文）に回答してください。`);
+        alert(`質問紙${taskNum}（メール）に回答してください。`);
         return;
       }
     } else if (taskPage === 3) { // 管理者確認画面の「次へ」
@@ -257,19 +257,19 @@ function App() {
     // Task 1 (pages 0-3)
     renderSUSQuestions(),          // 0: 質問紙①(1/3)
     renderNasaTLXQuestions(),      // 1: 質問紙①(2/3)
-    <ProductDescriptionQuestion />, // 2: 質問紙①(3/3)
+    <MailQuestion />, // 2: 質問紙①(3/3)
     <AdminConfirmation taskNumber={1} />, // 3: 管理者確認画面
     
     // Task 2 (pages 4-7)
     renderSUSQuestions(),          // 4: 質問紙②(1/3)
     renderNasaTLXQuestions(),      // 5: 質問紙②(2/3)
-    <ProductDescriptionQuestion />, // 6: 質問紙②(3/3)
+    <MailQuestion />, // 6: 質問紙②(3/3)
     <AdminConfirmation taskNumber={2} />, // 7: 管理者確認画面
     
     // Task 3 (pages 8-11)
     renderSUSQuestions(),          // 8: 質問紙③(1/3)
     renderNasaTLXQuestions(),      // 9: 質問紙③(2/3)
-    <ProductDescriptionQuestion />, // 10: 質問紙③(3/3)
+    <MailQuestion />, // 10: 質問紙③(3/3)
     <AdminConfirmation taskNumber={3} />, // 11: 管理者確認画面
   ];
 
