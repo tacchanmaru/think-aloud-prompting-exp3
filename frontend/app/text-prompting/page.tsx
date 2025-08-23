@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import EmailDisplayPhase from '../components/EmailDisplayPhase';
+import ConfirmationDialog from '../components/ConfirmationDialog';
 import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
@@ -41,6 +42,7 @@ function TextPromptingPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isDescriptionClicked, setIsDescriptionClicked] = useState(false);
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     
     const descriptionDisplayRef = useRef<HTMLDivElement | null>(null);
 
@@ -289,7 +291,13 @@ function TextPromptingPage() {
         }
     };
 
-    const handleComplete = async () => {
+    const handleComplete = () => {
+        setShowConfirmDialog(true);
+    };
+
+    const handleConfirmComplete = async () => {
+        setShowConfirmDialog(false);
+        
         try {
             // タイマーを停止
             stopTimer();
@@ -330,6 +338,10 @@ function TextPromptingPage() {
         } finally {
             router.push('/');
         }
+    };
+
+    const handleCancelComplete = () => {
+        setShowConfirmDialog(false);
     };
 
     return (
@@ -419,6 +431,16 @@ function TextPromptingPage() {
             )}
 
             {error && <div className="error">{error}</div>}
+            
+            <ConfirmationDialog
+                isOpen={showConfirmDialog}
+                title="編集完了の確認"
+                message="本当に編集を完了しますか？"
+                onConfirm={handleConfirmComplete}
+                onCancel={handleCancelComplete}
+                confirmText="はい"
+                cancelText="いいえ"
+            />
         </div>
     );
 }

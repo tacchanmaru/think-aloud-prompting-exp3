@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import EmailDisplayPhase from '../components/EmailDisplayPhase';
+import ConfirmationDialog from '../components/ConfirmationDialog';
 import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
@@ -46,6 +47,7 @@ function ThinkAloudPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const lastCompleteTimeRef = useRef<number>(Date.now());
     const [isDescriptionClicked, setIsDescriptionClicked] = useState(false);
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [pastUtterances, setPastUtterances] = useState<string>('');
     
     const websocketRef = useRef<WebSocket | null>(null);
@@ -574,7 +576,13 @@ function ThinkAloudPage() {
         }
     };
 
-    const handleComplete = async () => {
+    const handleComplete = () => {
+        setShowConfirmDialog(true);
+    };
+
+    const handleConfirmComplete = async () => {
+        setShowConfirmDialog(false);
+        
         try {
             stopTimer();
             
@@ -612,6 +620,10 @@ function ThinkAloudPage() {
         } finally {
             router.push('/');
         }
+    };
+
+    const handleCancelComplete = () => {
+        setShowConfirmDialog(false);
     };
 
     return (
@@ -699,6 +711,16 @@ function ThinkAloudPage() {
             )}
 
             {error && <div className="error">{error}</div>}
+            
+            <ConfirmationDialog
+                isOpen={showConfirmDialog}
+                title="編集完了の確認"
+                message="本当に編集を完了しますか？"
+                onConfirm={handleConfirmComplete}
+                onCancel={handleCancelComplete}
+                confirmText="はい"
+                cancelText="いいえ"
+            />
         </div>
     );
 }

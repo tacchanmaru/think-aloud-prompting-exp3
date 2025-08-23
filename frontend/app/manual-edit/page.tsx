@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import EmailDisplayPhase from '../components/EmailDisplayPhase';
+import ConfirmationDialog from '../components/ConfirmationDialog';
 import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
@@ -28,6 +29,7 @@ function ManualEditPage() {
     const [replyContent, setReplyContent] = useState('');
     const [originalReply, setOriginalReply] = useState('');
     const [hasEdited, setHasEdited] = useState(false);
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     // 戻る操作を無効化するためのuseEffect
@@ -83,7 +85,13 @@ function ManualEditPage() {
         }
     };
 
-    const handleComplete = async () => {
+    const handleComplete = () => {
+        setShowConfirmDialog(true);
+    };
+
+    const handleConfirmComplete = async () => {
+        setShowConfirmDialog(false);
+        
         try {
             // タイマーを停止
             stopTimer();
@@ -117,6 +125,10 @@ function ManualEditPage() {
         } finally {
             router.push('/');
         }
+    };
+
+    const handleCancelComplete = () => {
+        setShowConfirmDialog(false);
     };
 
     return (
@@ -167,6 +179,16 @@ function ManualEditPage() {
                     </div>
                 </div>
                 )}
+            
+            <ConfirmationDialog
+                isOpen={showConfirmDialog}
+                title="編集完了の確認"
+                message="本当に編集を完了しますか？"
+                onConfirm={handleConfirmComplete}
+                onCancel={handleCancelComplete}
+                confirmText="はい"
+                cancelText="いいえ"
+            />
         </div>
     );
 }
