@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, Suspense } from 'react';
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import EmailDisplayPhase from '../components/EmailDisplayPhase';
 import { useTimer } from '../contexts/TimerContext';
@@ -43,6 +43,27 @@ function TextPromptingPage() {
     const [isDescriptionClicked, setIsDescriptionClicked] = useState(false);
     
     const descriptionDisplayRef = useRef<HTMLDivElement | null>(null);
+
+    // 戻る操作を無効化するためのuseEffect
+    useEffect(() => {
+        const preventBack = () => {
+            window.history.pushState(null, '', window.location.href);
+        };
+
+        const handlePopState = () => {
+            window.history.pushState(null, '', window.location.href);
+        };
+
+        // 初期状態で履歴を追加
+        preventBack();
+
+        // popstateイベントリスナーを追加
+        window.addEventListener('popstate', handlePopState);
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, []);
 
     const updateHistorySummary = useCallback(async (history: typeof modificationHistory) => {
         // history summaryの更新は編集履歴が2つ以上の場合のみ実行

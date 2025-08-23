@@ -30,6 +30,27 @@ function ManualEditPage() {
     const [hasEdited, setHasEdited] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+    // 戻る操作を無効化するためのuseEffect
+    useEffect(() => {
+        const preventBack = () => {
+            window.history.pushState(null, '', window.location.href);
+        };
+
+        const handlePopState = () => {
+            window.history.pushState(null, '', window.location.href);
+        };
+
+        // 初期状態で履歴を追加
+        preventBack();
+
+        // popstateイベントリスナーを追加
+        window.addEventListener('popstate', handlePopState);
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, []);
+
     // Auto-resize textarea based on content
     const adjustTextareaHeight = () => {
         if (textareaRef.current) {
