@@ -2,26 +2,22 @@
 
 import { useState } from 'react';
 import { FaEnvelope } from 'react-icons/fa';
-import { email1, email2, practiceEmail } from '../../lib/emails';
-import { useTimer } from '../contexts/TimerContext';
 import { getEmailForExperiment, ExperimentPageType } from '../../lib/experimentUtils';
+import { Email } from '../../lib/emails';
 import { useAuth } from '../contexts/AuthContext';
 
 interface EmailDisplayPhaseProps {
-    onComplete: (email: any, emailPreview: string, initialReplyText: string) => Promise<void>;
+    onComplete: (email: Email, emailPreview: string, initialReplyText: string) => Promise<void>;
     isPractice?: boolean;
     pageType: ExperimentPageType;
     onMicrophoneConnecting?: (isConnecting: boolean) => void;
 }
 
-const EmailDisplayPhase: React.FC<EmailDisplayPhaseProps> = ({ onComplete, isPractice = false, pageType, onMicrophoneConnecting }) => {
+const EmailDisplayPhase: React.FC<EmailDisplayPhaseProps> = ({ onComplete, isPractice = false, pageType }) => {
     const { userId } = useAuth();
     const currentEmail = getEmailForExperiment(userId, pageType, isPractice);
     const [error, setError] = useState<string | null>(null);
-    const [showStartButton, setShowStartButton] = useState(true);
     const [isConnectingMicrophone, setIsConnectingMicrophone] = useState(false);
-    
-    const { startTimer } = useTimer();
 
     const handleStartEditing = async () => {
         try {
@@ -65,23 +61,21 @@ const EmailDisplayPhase: React.FC<EmailDisplayPhaseProps> = ({ onComplete, isPra
                     </div>
                 </div>
                 
-                {showStartButton && (
-                    <div>
-                        {isConnectingMicrophone && (
-                            <div className="microphone-connecting">
-                                <div className="spinner"></div>
-                                <p>マイクに接続中...</p>
-                            </div>
-                        )}
-                        <button 
-                            className="start-edit-button"
-                            onClick={handleStartEditing}
-                            disabled={isConnectingMicrophone}
-                        >
-                            {isConnectingMicrophone ? '接続中...' : '返信文作成開始'}
-                        </button>
-                    </div>
-                )}
+                <div>
+                    {isConnectingMicrophone && (
+                        <div className="microphone-connecting">
+                            <div className="spinner"></div>
+                            <p>マイクに接続中...</p>
+                        </div>
+                    )}
+                    <button 
+                        className="start-edit-button"
+                        onClick={handleStartEditing}
+                        disabled={isConnectingMicrophone}
+                    >
+                        {isConnectingMicrophone ? '接続中...' : '返信文作成開始'}
+                    </button>
+                </div>
                 
                 {error && <div className="error-message">{error}</div>}
             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, FC } from 'react';
+import { useState, useEffect, FC } from 'react';
 import { FaCog, FaTimes, FaUser } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './contexts/AuthContext';
@@ -58,13 +58,8 @@ const SettingsModal: FC<{
     onClose: () => void;
     settings: Settings;
     onSave: (newSettings: Settings) => void;
-}> = ({ isOpen, onClose, settings, onSave }) => {
-    const [currentSettings, setCurrentSettings] = useState(settings);
+}> = ({ isOpen, onClose }) => {
     const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        setCurrentSettings(settings);
-    }, [settings, isOpen]);
 
     useEffect(() => {
         // モバイル判定の初期化とリサイズ対応
@@ -90,8 +85,6 @@ const SettingsModal: FC<{
             document.body.style.overflow = '';
         };
     }, [isOpen, isMobile]);
-
-    const { userId } = useAuth();
 
     const handleOverlayClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget && !isMobile) {

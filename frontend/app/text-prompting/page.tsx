@@ -7,7 +7,8 @@ import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
 import { TextPromptingExperimentResult } from '../../lib/types';
-import { ExperimentPageType, getEmailForExperiment } from '../../lib/experimentUtils';
+import { Email } from '../../lib/emails';
+import { ExperimentPageType } from '../../lib/experimentUtils';
 
 // =========== TextPromptingPage Component ===========
 function TextPromptingPage() {
@@ -20,7 +21,7 @@ function TextPromptingPage() {
     const [mode, setMode] = useState<'display' | 'edit'>('display');
     
     // Application state
-    const [emailData, setEmailData] = useState<any>(null);
+    const [emailData, setEmailData] = useState<Email | null>(null);
     
     // Text editing state
     const [replyContent, setReplyContent] = useState('');
@@ -42,6 +43,48 @@ function TextPromptingPage() {
     const [isDescriptionClicked, setIsDescriptionClicked] = useState(false);
     
     const descriptionDisplayRef = useRef<HTMLDivElement | null>(null);
+
+    const updateHistorySummary = useCallback(async (history: typeof modificationHistory) => {
+        // history summaryの更新は編集履歴が2つ以上の場合のみ実行
+        if (history.length < 2) {
+            return;
+        }
+
+        try {
+            console.log('Updating history summary for', history.length, 'modifications');
+            
+            const response = await fetch('/api/history-summary', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    history: history.map(item => ({
+                        utterance: item.utterance,
+                        editPlan: item.editPlan,
+                        originalText: item.originalText,
+                        modifiedText: item.modifiedText,
+                    })),
+                    currentSummary: historySummary
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`History summary API error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.historySummary) {
+                setHistorySummary(result.historySummary);
+                console.log('History summary updated:', result.historySummary);
+            }
+            
+        } catch (error) {
+            console.error('Error updating history summary:', error);
+            // History summary更新の失敗は致命的エラーではないため、メイン処理は継続
+        }
+    }, [historySummary]);
 
     const processTextModification = useCallback(async (utterance: string) => {
         try {
@@ -106,49 +149,7 @@ function TextPromptingPage() {
             console.error('Error in text modification:', error);
             throw error; // Re-throw to be handled by caller
         }
-    }, [replyContent, emailData, modificationHistory, historySummary]);
-
-    const updateHistorySummary = useCallback(async (history: typeof modificationHistory) => {
-        // history summaryの更新は編集履歴が2つ以上の場合のみ実行
-        if (history.length < 2) {
-            return;
-        }
-
-        try {
-            console.log('Updating history summary for', history.length, 'modifications');
-            
-            const response = await fetch('/api/history-summary', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    history: history.map(item => ({
-                        utterance: item.utterance,
-                        editPlan: item.editPlan,
-                        originalText: item.originalText,
-                        modifiedText: item.modifiedText,
-                    })),
-                    currentSummary: historySummary
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`History summary API error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            
-            if (result.historySummary) {
-                setHistorySummary(result.historySummary);
-                console.log('History summary updated:', result.historySummary);
-            }
-            
-        } catch (error) {
-            console.error('Error updating history summary:', error);
-            // History summary更新の失敗は致命的エラーではないため、メイン処理は継続
-        }
-    }, [historySummary]);
+    }, [replyContent, emailData, modificationHistory, historySummary, updateHistorySummary]);
 
     // 前のテキストを取得する関数
     const getPreviousText = () => {
@@ -229,7 +230,7 @@ function TextPromptingPage() {
         return lcs;
     };
 
-    const handleEmailDisplayComplete = async (email: any, emailPreview: string, initialReplyText: string) => {
+    const handleEmailDisplayComplete = async (email: Email, emailPreview: string, initialReplyText: string) => {
         setEmailData(email);
         setReplyContent(initialReplyText);
         setOriginalText(initialReplyText);
@@ -276,7 +277,7 @@ function TextPromptingPage() {
             const experimentData: TextPromptingExperimentResult = {
                 userId: userId || 0, // 1-100の範囲のuserId
                 experimentType: 'text-prompting',
-                emailId: emailData?.id || 'email1',
+                emailId: emailData?.id || '',
                 originalEmail: emailData?.content || '',
                 emailSubject: emailData?.subject || '',
                 replyText: replyContent,

@@ -7,7 +7,7 @@ import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
 import { ManualExperimentResult } from '../../lib/types';
-import { getEmailForExperiment } from '../../lib/experimentUtils';
+import { Email } from '../../lib/emails';
 import { ExperimentPageType } from '../../lib/experimentUtils';
 
 
@@ -16,13 +16,13 @@ function ManualEditPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const isPractice = searchParams.get('practice') === 'true';
-    const { stopTimer, getStartTimeISO, getEndTimeISO, getDurationSeconds } = useTimer();
+    const { startTimer, stopTimer, getStartTimeISO, getEndTimeISO, getDurationSeconds } = useTimer();
     const { userId } = useAuth();
     
     const [mode, setMode] = useState<'display' | 'edit'>('display');
     
     // Application state
-    const [emailData, setEmailData] = useState<any>(null);
+    const [emailData, setEmailData] = useState<Email | null>(null);
     
     // Text editing state
     const [replyContent, setReplyContent] = useState('');
@@ -44,10 +44,11 @@ function ManualEditPage() {
         adjustTextareaHeight();
     }, [replyContent]);
 
-    const handleEmailDisplayComplete = async (email: any, emailPreview: string, initialReplyText: string) => {
+    const handleEmailDisplayComplete = async (email: Email, emailPreview: string, initialReplyText: string) => {
         setEmailData(email);
         setReplyContent(initialReplyText);
         setOriginalReply(initialReplyText); // 元の返信文として保存
+        startTimer();
         setMode('edit');
     };
 
@@ -67,13 +68,12 @@ function ManualEditPage() {
             stopTimer();
             
             // 実験データを準備
-            const currentEmail = getEmailForExperiment(userId, ExperimentPageType.ManualEdit, isPractice);
             const experimentData: ManualExperimentResult = {
                 userId: userId || 0, // 1-100の範囲のuserId
                 experimentType: 'manual',
-                emailId: emailData?.id || currentEmail.id,
-                originalEmail: currentEmail.content,
-                emailSubject: currentEmail.subject,
+                emailId: emailData?.id || '',
+                originalEmail: emailData?.content || '',
+                emailSubject: emailData?.subject || '',
                 replyText: replyContent,
                 startTime: getStartTimeISO() || new Date().toISOString(),
                 endTime: getEndTimeISO(),

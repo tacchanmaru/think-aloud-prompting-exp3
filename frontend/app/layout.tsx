@@ -6,6 +6,7 @@ import { TimerProvider } from "./contexts/TimerContext";
 
 const inter = Inter({ subsets: ['latin'] });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const metadata: Metadata = {
     title: "Memos App",
     description: "A simple note-taking app with voice transcription.",
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
     },
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const viewport: Viewport = {
     width: "device-width",
     initialScale: 1,

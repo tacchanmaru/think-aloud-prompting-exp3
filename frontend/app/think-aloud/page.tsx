@@ -7,7 +7,8 @@ import { useTimer } from '../contexts/TimerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { saveExperimentData } from '../../lib/experimentService';
 import { ThinkAloudExperimentResult } from '../../lib/types';
-import { ExperimentPageType, getEmailForExperiment } from '../../lib/experimentUtils';
+import { Email } from '../../lib/emails';
+import { ExperimentPageType } from '../../lib/experimentUtils';
 
 // =========== ThinkAloudPage Component ===========
 function ThinkAloudPage() {
@@ -20,7 +21,7 @@ function ThinkAloudPage() {
     const [mode, setMode] = useState<'display' | 'edit'>('display');
     
     // Application state
-    const [emailData, setEmailData] = useState<any>(null);
+    const [emailData, setEmailData] = useState<Email | null>(null);
     
     // Text editing state
     const [replyContent, setReplyContent] = useState('');
@@ -37,7 +38,6 @@ function ThinkAloudPage() {
     
     // Audio recording state
     const [isRecording, setIsRecording] = useState(false);
-    const [isTranscribing, setIsTranscribing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [transcriptItems, setTranscriptItems] = useState<{id: number, text: string, utteranceText: string, isProcessed: boolean}[]>([]);
     
@@ -56,6 +56,46 @@ function ThinkAloudPage() {
     const streamRef = useRef<MediaStream | null>(null);
     const descriptionDisplayRef = useRef<HTMLDivElement | null>(null);
     const isWaitingPermissionRef = useRef<boolean>(false);
+
+    const updateHistorySummary = useCallback(async (history: typeof modificationHistory) => {
+        if (history.length < 2) {
+            return;
+        }
+
+        try {
+            console.log('Updating history summary for', history.length, 'modifications');
+            
+            const response = await fetch('/api/history-summary', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    history: history.map(item => ({
+                        utterance: item.utterance,
+                        editPlan: item.editPlan,
+                        originalText: item.originalText,
+                        modifiedText: item.modifiedText,
+                    })),
+                    currentSummary: historySummary
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`History summary API error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.historySummary) {
+                setHistorySummary(result.historySummary);
+                console.log('History summary updated:', result.historySummary);
+            }
+            
+        } catch (error) {
+            console.error('Error updating history summary:', error);
+        }
+    }, [historySummary]);
 
     const processTextModification = useCallback(async (utterance: string) => {
         try {
@@ -117,47 +157,7 @@ function ThinkAloudPage() {
             console.error('Error in text modification:', error);
             throw error;
         }
-    }, [replyContent, emailData, modificationHistory, historySummary, pastUtterances]);
-
-    const updateHistorySummary = useCallback(async (history: typeof modificationHistory) => {
-        if (history.length < 2) {
-            return;
-        }
-
-        try {
-            console.log('Updating history summary for', history.length, 'modifications');
-            
-            const response = await fetch('/api/history-summary', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    history: history.map(item => ({
-                        utterance: item.utterance,
-                        editPlan: item.editPlan,
-                        originalText: item.originalText,
-                        modifiedText: item.modifiedText,
-                    })),
-                    currentSummary: historySummary
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`History summary API error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            
-            if (result.historySummary) {
-                setHistorySummary(result.historySummary);
-                console.log('History summary updated:', result.historySummary);
-            }
-            
-        } catch (error) {
-            console.error('Error updating history summary:', error);
-        }
-    }, [historySummary]);
+    }, [replyContent, emailData, modificationHistory, historySummary, pastUtterances, updateHistorySummary]);
 
     const processBufferedUtterances = useCallback(async () => {
         if (isProcessing) return;
@@ -287,7 +287,7 @@ function ThinkAloudPage() {
         return lcs;
     };
 
-    const handleEmailDisplayComplete = async (email: any, emailPreview: string, initialReplyText: string) => {
+    const handleEmailDisplayComplete = async (email: Email, emailPreview: string, initialReplyText: string) => {
         setEmailData(email);
         setReplyContent(initialReplyText);
         setOriginalText(initialReplyText);
@@ -322,7 +322,6 @@ function ThinkAloudPage() {
         if (isRecording) return;
 
         try {
-            setIsTranscribing(true);
             isConnectedRef.current = false;
 
             const tokenResponse = await fetch('/api/auth/openai-token', { method: 'POST' });
@@ -352,7 +351,6 @@ function ThinkAloudPage() {
                 isConnectedRef.current = true;
                 isRecordingStateRef.current = true;
                 setIsRecording(true);
-                setIsTranscribing(false);
                 
                 if (isWaitingPermissionRef.current) {
                     startTimer();
@@ -515,7 +513,6 @@ function ThinkAloudPage() {
         isConnectedRef.current = false;
         isRecordingStateRef.current = false;
         setIsRecording(false);
-        setIsTranscribing(false);
 
         if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
             try {
@@ -563,7 +560,7 @@ function ThinkAloudPage() {
             const experimentData: ThinkAloudExperimentResult = {
                 userId: userId || 0,
                 experimentType: 'think-aloud',
-                emailId: emailData?.id || 'email1',
+                emailId: emailData?.id || '',
                 originalEmail: emailData?.content || '',
                 emailSubject: emailData?.subject || '',
                 replyText: replyContent,

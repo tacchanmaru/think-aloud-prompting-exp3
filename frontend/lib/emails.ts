@@ -36,6 +36,21 @@ export const email2: Email = {
   sender: 'buyer123@example.com'
 };
 
+export const email3: Email = {
+  id: 'email3',
+  subject: '価格の相談について',
+  content: `こんにちは。
+
+こちらの商品に興味を持っております。
+
+現在の価格設定について、少しご相談があります。予算の都合もあり、もし可能でしたら少しお値下げしていただくことは可能でしょうか。
+
+失礼な質問で申し訳ございませんが、ご検討いただければ幸いです。
+
+どうぞよろしくお願いいたします。`,
+  sender: 'bargain@example.com'
+};
+
 // Practice mode data
 export const practiceEmail: Email = {
   id: 'practice',
