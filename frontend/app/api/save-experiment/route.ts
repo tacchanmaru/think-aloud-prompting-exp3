@@ -38,9 +38,9 @@ export async function POST(request: NextRequest) {
         const experimentData: ExperimentResult = await request.json();
         
         // 必須フィールドのバリデーション
-        if (experimentData.userId == null || !experimentData.experimentType || !experimentData.productId) {
+        if (experimentData.userId == null || !experimentData.experimentType || !experimentData.emailId) {
             return NextResponse.json(
-                { error: 'Missing required fields: userId, experimentType, or productId' },
+                { error: 'Missing required fields: userId, experimentType, or emailId' },
                 { status: 400 }
             );
         }
@@ -50,12 +50,18 @@ export async function POST(request: NextRequest) {
         // コレクションパスの決定（新構造）
         const collectionPath = experimentData.isPracticeMode ? 'practice' : 'task';
         const timestamp = Date.now().toString();
-        const experimentType = experimentData.experimentType === 'manual' ? 'manual_edit' : 'think_aloud';
+        const experimentType = experimentData.experimentType === 'manual' 
+            ? 'manual_edit' 
+            : experimentData.experimentType === 'text-prompting'
+            ? 'text_prompting'
+            : 'think_aloud';
         const docRef = db.doc(`${collectionPath}/${timestamp}_${experimentType}`);
         
         // 実験タイプに応じたフィールド名の決定
         const fieldName = experimentData.experimentType === 'manual' 
             ? 'baseline_manual_result' 
+            : experimentData.experimentType === 'text-prompting'
+            ? 'text_prompting_result'
             : 'think_aloud_result';
 
         // Firestoreに保存

@@ -1,3 +1,7 @@
+:root {
+    --mail-font-size: 12px;
+}
+
 /* 基本的なリセットとライトテーマの設定 */
 html,
 body {
@@ -21,6 +25,77 @@ body {
     padding: 20px 0;
     justify-content: flex-start;
     box-sizing: border-box;
+}
+
+/* メール表示レイアウト */
+.email-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 100%;
+    margin: 0px 20px;
+    padding: 20px 0;
+    justify-content: flex-start;
+    box-sizing: border-box;
+}
+
+/* メール表示用のスタイル */
+.email-container {
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 24px;
+}
+
+.email-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 12px;
+}
+
+.email-meta {
+    flex: 1;
+}
+
+.email-from {
+    font-size: var(--mail-font-size);
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.email-subject {
+    font-weight: bold;
+    font-size: var(--mail-font-size);
+}
+
+.email-content {
+    background-color: #f8f8f8;
+    border-left: 2px solid #888;
+    padding: 8px;
+    white-space: pre-line;
+    line-height: 1.6;
+    font-size: var(--mail-font-size);
+}
+
+.received-email-container {
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.received-email-header h3 {
+    margin: 0 0 12px 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.reply-email-container {
+    width: 100%;
+}
+
+.reply-email-header {
+    margin: 0 0 12px 0;
+    font-size: 18px;
+    color: #333;
 }
 
 .product-image-container {
@@ -484,12 +559,12 @@ body {
     border: 1px solid #dee2e6;
     border-radius: 8px;
     padding: 14px;
-    font-size: 14px;
+    font-size: var(--mail-font-size);
     line-height: 1.6;
     transition: border-color 0.2s ease;
     white-space: pre-wrap;
     margin-bottom: 20px;
-    min-height: calc(14px * 1.6 * 5); /* 最小5行の高さ */
+    min-height: calc(var(--mail-font-size) * 1.6 * 5); /* 最小5行の高さ */
     resize: vertical;
 }
 
@@ -630,7 +705,7 @@ body {
 
 .transcript-text {
     color: #212529;
-    font-size: 13px;
+    font-size: var(--mail-font-size);
     word-wrap: break-word;
     line-height: 1.4;
 }
@@ -638,7 +713,7 @@ body {
 .no-transcript {
     color: #495057;
     font-style: italic;
-    font-size: 13px;
+    font-size: var(--mail-font-size);
     text-align: center;
     width: 100%;
 }
@@ -1901,3 +1976,62 @@ body {
 .min-h-[1em] {
     min-height: 1em;
 }
+
+/* Text prompting specific styles */
+.prompt-input-container {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+
+.prompt-input {
+    flex: 1;
+    background-color: #ffffff;
+    color: #212529;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: var(--mail-font-size);
+    line-height: 1.4;
+    resize: vertical;
+    min-height: calc(var(--mail-font-size) * 1.4 * 3);
+    max-height: calc(var(--mail-font-size) * 1.4 * 6);
+    transition: border-color 0.2s ease;
+}
+
+.prompt-input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.prompt-input:disabled {
+    background-color: #f8f9fa;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.send-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+    min-height: 44px;
+}
+
+.send-button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.send-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+

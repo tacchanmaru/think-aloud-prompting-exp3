@@ -17,6 +17,7 @@ interface TimerContextType {
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTimer = () => {
     const context = useContext(TimerContext);
     if (context === undefined) {
