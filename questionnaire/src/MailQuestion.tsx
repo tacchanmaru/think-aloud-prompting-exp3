@@ -24,7 +24,11 @@ interface LocalAnswer {
   agency: number | null;
 }
 
-const MailQuestion = () => {
+interface MailQuestionProps {
+  hideGuilt?: boolean;
+}
+
+const MailQuestion = ({ hideGuilt = false }: MailQuestionProps) => {
   const [localAnswer, setLocalAnswer] = useState<LocalAnswer>({
     satisfaction: null,
     guilt: null,
@@ -45,7 +49,15 @@ const MailQuestion = () => {
         agency: formAnswer.agency || null
       });
     }
-  }, []);
+    
+    // hideGuiltがtrueの場合、guiltを自動的にnullに設定
+    if (hideGuilt) {
+      setFormAnswer((oldForm) => ({
+        ...oldForm,
+        guilt: null
+      }));
+    }
+  }, [hideGuilt]);
 
   const handleChange = (field: keyof LocalAnswer, value: number) => {
     setLocalAnswer((old) => {
@@ -96,7 +108,7 @@ const MailQuestion = () => {
       </Paper>
       {renderScaleQuestion("この文章の編集時において、自分がどの程度主体的にコントロールしていると感じましたか", "agency")}
       {renderScaleQuestion("文章作成に対する満足度はどのくらいですか", "satisfaction")}
-      {renderScaleQuestion("送信者として、AIを活用して書いたことに対する罪悪感がありますか", "guilt")}
+      {!hideGuilt && renderScaleQuestion("送信者として、AIを活用して書いたことに対する罪悪感がありますか", "guilt")}
       {renderScaleQuestion("どのぐらい自分の文章だと思いますか", "ownership")}
       {renderScaleQuestion("完成したメールは、どのぐらい正直に書いていると思いますか", "honesty")}
     </>

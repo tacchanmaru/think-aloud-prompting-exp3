@@ -74,7 +74,10 @@ function App() {
         return;
       }
     } else if (taskPage === 2) { // メール
-      if (!product_description_answer.satisfaction || !product_description_answer.guilt || 
+      // Task 1では罪悪感の質問がないため、guiltのチェックをスキップ
+      const isTask1 = currentTask === 0;
+      if (!product_description_answer.satisfaction || 
+          (!isTask1 && !product_description_answer.guilt) || 
           !product_description_answer.ownership || !product_description_answer.honesty ||
           !product_description_answer.agency) {
         alert(`質問紙${taskNum}（メール）に回答してください。`);
@@ -257,7 +260,7 @@ function App() {
     // Task 1 (pages 0-3)
     renderSUSQuestions(),          // 0: 質問紙①(1/3)
     renderNasaTLXQuestions(),      // 1: 質問紙①(2/3)
-    <MailQuestion />, // 2: 質問紙①(3/3)
+    <MailQuestion hideGuilt={true} />, // 2: 質問紙①(3/3)
     <AdminConfirmation taskNumber={1} />, // 3: 管理者確認画面
     
     // Task 2 (pages 4-7)
