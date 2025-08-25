@@ -4,6 +4,7 @@ export interface Email {
   subject: string;
   content: string;
   sender: string;
+  initialReply?: string;
 }
 
 export const email1: Email = {
@@ -18,7 +19,8 @@ export const email1: Email = {
 お忙しい中恐れ入りますが、ご回答いただけますと幸いです。
 
 よろしくお願いいたします。`,
-  sender: 'user@example.com'
+  sender: 'user@example.com',
+  initialReply: ''
 };
 
 export const email2: Email = {
@@ -33,7 +35,8 @@ export const email2: Email = {
 プレゼント用に購入を考えているため、できるだけ丁寧な梱包をお願いできればと思います。
 
 ご確認のほど、よろしくお願いいたします。`,
-  sender: 'buyer123@example.com'
+  sender: 'buyer123@example.com',
+  initialReply: ''
 };
 
 export const email3: Email = {
@@ -48,21 +51,44 @@ export const email3: Email = {
 失礼な質問で申し訳ございませんが、ご検討いただければ幸いです。
 
 どうぞよろしくお願いいたします。`,
-  sender: 'bargain@example.com'
+  sender: 'bargain@example.com',
+  initialReply: ''
 };
 
 // Practice mode data
 export const practiceEmail: Email = {
   id: 'practice',
-  subject: '購入させていただきたいです',
-  content: `はじめまして。
+  subject: 'Re: 研究室訪問のお願い',
+  content: `欄木さん
 
-こちらの商品に興味があり、ぜひ購入させていただきたいと思っています。
+研究室訪問の件、了解しました。
+下記で都合のつく時間を教えてください。
 
-即購入は可能でしょうか。また、他にも同じような商品をお持ちでしたら、合わせて拝見させていただきたいです。
+・9月1日（月） 13:00〜15:00
+・9月3日（水） 終日
+・9月5日（金） 10:00〜12:00
 
-お返事をお待ちしております。
+上記が難しければ、希望日時をいくつかください。
 
-よろしくお願いいたします。`,
-  sender: 'practice@example.com'
+よろしくお願いします。
+
+苗村`,
+  sender: 'practice@example.com',
+  initialReply: `苗村 健 先生
+
+ご多忙の中、早速ご返信いただき、誠にありがとうございます。
+東京大学工学部3年の欄木達也でございます。
+
+研究室訪問の日程候補をご提示いただき、誠にありがとうございます。
+先生の大変貴重なお時間を割いていただくこととなり、大変恐縮です。
+
+つきましては、ご提示いただいた日程の中から、下記の時間帯にてお伺いしたく存じます。
+
+第一希望：9月3日（水） 14:00〜15:00
+第二希望：9月1日（月） 13:00〜14:00
+第三希望：9月5日（金） 11:00〜12:00
+
+上記の日程で先生のご都合のよろしい時間帯をご教示いただけますと幸いです。
+
+何卒よろしくお願い申し上げます。`
 };

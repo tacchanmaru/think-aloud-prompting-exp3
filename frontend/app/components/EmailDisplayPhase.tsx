@@ -31,8 +31,8 @@ const EmailDisplayPhase: React.FC<EmailDisplayPhaseProps> = ({ onComplete, isPra
                 sender: currentEmail.sender
             };
             
-            // 空の返信文で開始
-            const initialReplyText = '';
+            // 初期返信文を設定（emailオブジェクトのinitialReplyを使用）
+            const initialReplyText = currentEmail.initialReply || '';
             
             // Wait for parent to handle microphone permission + WebSocket connection
             await onComplete(emailData, currentEmail.content, initialReplyText);
